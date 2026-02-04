@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ org_name }} - Metrics Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/[email protected]/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/[email protected]/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/[email protected]/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --success-color: #3fb950;
+            --warning-color: #d29922;
+            --danger-color: #f85149;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
+        
+        .navbar {
+            background-color: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+        
+        .card-header {
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .table {
+            color: var(--text-primary);
+        }
+        
+        .table th {
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        
+        .table td {
+            border-color: var(--border-color);
+        }
+        
+        .lang-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            background-color: var(--bg-tertiary);
+        }
+        
+        .lang-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .topic-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            margin: 0.125rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+        }
+        
+        .progress {
+            background-color: var(--bg-tertiary);
+            height: 8px;
+            border-radius: 4px;
+        }
+        
+        .repo-link {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        .repo-link:hover {
+            text-decoration: underline;
+        }
+        
+        .contributor-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .activity-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        .activity-high { background-color: var(--success-color); }
+        .activity-medium { background-color: var(--warning-color); }
+        .activity-low { background-color: var(--danger-color); }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 2rem 0;
+            margin-top: 3rem;
+            color: var(--text-secondary);
+        }
+        
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+        
+        .btn-outline-secondary {
+            color: var(--text-secondary);
+            border-color: var(--border-color);
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+        
+        .archived-badge {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.4rem;
+            background-color: var(--warning-color);
+            color: #000;
+            border-radius: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-github me-2"></i>
+                {{ org_name }} Metrics Dashboard
+            </a>
+            <span class="text-muted">
+                <i class="bi bi-clock me-1"></i>
+                Updated: {{ generated_at | format_date }}
+            </span>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- Summary Stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ summary.total_repos }}</div>
+                    <div class="stat-label">Repositories</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ summary.total_stars | format_number }}</div>
+                    <div class="stat-label">Total Stars</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ summary.total_forks | format_number }}</div>
+                    <div class="stat-label">Total Forks</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value">{{ summary.unique_contributors }}</div>
+                    <div class="stat-label">Contributors</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Overview -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card stat-card">
+                    <div class="stat-value text-success">{{ summary.total_commits_30d | format_number }}</div>
+                    <div class="stat-label">Commits (30 days)</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card">
+                    <div class="stat-value text-warning">{{ summary.total_open_issues }}</div>
+                    <div class="stat-label">Open Issues</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card">
+                    <div class="stat-value text-info">{{ summary.total_open_prs }}</div>
+                    <div class="stat-label">Open PRs</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Language Distribution -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-code-slash me-2"></i>
+                        Language Distribution
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="languageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Breakdown -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-activity me-2"></i>
+                        Repository Activity (30 days)
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span><span class="activity-indicator activity-high"></span>Very Active (&gt;10 commits)</span>
+                                <strong>{{ activity.very_active_repos }}</strong>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" style="width: {{ (activity.very_active_repos / summary.active_repos * 100) if summary.active_repos else 0 }}%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span><span class="activity-indicator activity-medium"></span>Active (1-10 commits)</span>
+                                <strong>{{ activity.active_repos }}</strong>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" style="width: {{ (activity.active_repos / summary.active_repos * 100) if summary.active_repos else 0 }}%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span><span class="activity-indicator activity-low"></span>Inactive (0 commits)</span>
+                                <strong>{{ activity.inactive_repos }}</strong>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-danger" style="width: {{ (activity.inactive_repos / summary.active_repos * 100) if summary.active_repos else 0 }}%"></div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4" style="border-color: var(--border-color);">
+                        
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="fs-4 fw-bold text-success">{{ activity.issue_velocity.closed_30d }}</div>
+                                <small class="text-muted">Issues Closed (30d)</small>
+                            </div>
+                            <div class="col-6">
+                                <div class="fs-4 fw-bold text-info">{{ activity.pr_velocity.merged_30d }}</div>
+                                <small class="text-muted">PRs Merged (30d)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Repositories -->
+        <div class="row g-4 mt-2">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-star me-2"></i>
+                        Most Starred Repositories
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Repository</th>
+                                    <th class="text-end">Stars</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for repo in top_repos.by_stars[:10] %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ repo.url }}" class="repo-link" target="_blank">{{ repo.name }}</a>
+                                        {% if repo.language %}
+                                        <span class="lang-badge ms-2">
+                                            <span class="lang-dot" style="background-color: {{ repo.language | lang_color }}"></span>
+                                            {{ repo.language }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <i class="bi bi-star-fill text-warning me-1"></i>
+                                        {{ repo.value | format_number }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Most Active Repositories (30 days)
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Repository</th>
+                                    <th class="text-end">Commits</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for repo in top_repos.by_commits_30d[:10] %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ repo.url }}" class="repo-link" target="_blank">{{ repo.name }}</a>
+                                        {% if repo.language %}
+                                        <span class="lang-badge ms-2">
+                                            <span class="lang-dot" style="background-color: {{ repo.language | lang_color }}"></span>
+                                            {{ repo.language }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <i class="bi bi-git text-success me-1"></i>
+                                        {{ repo.value }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Contributors -->
+        <div class="row g-4 mt-2">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-people me-2"></i>
+                        Top Contributors
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for contributor in contributors.top_contributors[:12] %}
+                            <div class="col-md-4 col-lg-3 mb-3">
+                                <div class="d-flex align-items-center p-2" style="background-color: var(--bg-tertiary); border-radius: 6px;">
+                                    <img src="https://github.com/{{ contributor.login }}.png?size=64" 
+                                         alt="{{ contributor.login }}" 
+                                         class="contributor-avatar">
+                                    <div>
+                                        <a href="{{ contributor.profile_url }}" class="repo-link" target="_blank">
+                                            {{ contributor.login }}
+                                        </a>
+                                        <div class="text-muted" style="font-size: 0.8rem;">
+                                            {{ contributor.total_contributions | format_number }} contributions
+                                            · {{ contributor.repo_count }} repos
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Topics -->
+        {% if topics %}
+        <div class="row g-4 mt-2">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-tags me-2"></i>
+                        Popular Topics
+                    </div>
+                    <div class="card-body">
+                        {% for topic, count in topics.items() %}
+                        <span class="topic-badge">{{ topic }} ({{ count }})</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- All Repositories -->
+        <div class="row g-4 mt-2">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="bi bi-folder me-2"></i>
+                            All Repositories ({{ repos | length }})
+                        </span>
+                        <div>
+                            <input type="text" id="repoSearch" class="form-control form-control-sm" 
+                                   placeholder="Filter repositories..." 
+                                   style="background-color: var(--bg-tertiary); border-color: var(--border-color); color: var(--text-primary);">
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="repoTable">
+                                <thead>
+                                    <tr>
+                                        <th>Repository</th>
+                                        <th>Language</th>
+                                        <th class="text-end">Stars</th>
+                                        <th class="text-end">Forks</th>
+                                        <th class="text-end">Issues</th>
+                                        <th class="text-end">PRs</th>
+                                        <th class="text-end">Commits (30d)</th>
+                                        <th>Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for repo in repos %}
+                                    <tr class="repo-row">
+                                        <td>
+                                            <a href="{{ repo.url }}" class="repo-link" target="_blank">{{ repo.name }}</a>
+                                            {% if repo.is_archived %}
+                                            <span class="archived-badge ms-1">archived</span>
+                                            {% endif %}
+                                            {% if repo.description %}
+                                            <div class="text-muted" style="font-size: 0.8rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                {{ repo.description }}
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if repo.language %}
+                                            <span class="lang-badge">
+                                                <span class="lang-dot" style="background-color: {{ repo.language | lang_color }}"></span>
+                                                {{ repo.language }}
+                                            </span>
+                                            {% else %}
+                                            <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">{{ repo.stars | format_number }}</td>
+                                        <td class="text-end">{{ repo.forks | format_number }}</td>
+                                        <td class="text-end">{{ repo.open_issues }}</td>
+                                        <td class="text-end">{{ repo.open_prs }}</td>
+                                        <td class="text-end">
+                                            {% if repo.commits_30d > 10 %}
+                                            <span class="text-success">{{ repo.commits_30d }}</span>
+                                            {% elif repo.commits_30d > 0 %}
+                                            <span class="text-warning">{{ repo.commits_30d }}</span>
+                                            {% else %}
+                                            <span class="text-muted">0</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted">{{ repo.updated_at | time_ago }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container text-center">
+            <p class="mb-1">
+                <i class="bi bi-github me-1"></i>
+                {{ org_name }} Metrics Dashboard
+            </p>
+            <p class="mb-0">
+                <small>Last updated: {{ generated_at | format_date }} · Powered by GitHub API</small>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Language Chart
+        const langData = {{ languages.by_bytes | tojson | safe }};
+        const langLabels = Object.keys(langData).slice(0, 10);
+        const langValues = langLabels.map(l => langData[l].percentage);
+        const langColors = [
+            '#3572A5', '#f1e05a', '#2b7489', '#b07219', '#178600',
+            '#f34b7d', '#00ADD8', '#dea584', '#701516', '#4F5D95'
+        ];
+
+        new Chart(document.getElementById('languageChart'), {
+            type: 'doughnut',
+            data: {
+                labels: langLabels,
+                datasets: [{
+                    data: langValues,
+                    backgroundColor: langColors,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#c9d1d9',
+                            padding: 15,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw.toFixed(1) + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Repository search/filter
+        document.getElementById('repoSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.repo-row');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

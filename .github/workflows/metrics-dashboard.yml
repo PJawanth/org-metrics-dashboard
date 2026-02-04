@@ -1,0 +1,102 @@
+name: Update Metrics Dashboard
+
+on:
+  # Run daily at midnight UTC
+  schedule:
+    - cron: '0 0 * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      organization:
+        description: 'GitHub organization name'
+        required: false
+        type: string
+
+  # Run on push to main branch (for testing)
+  push:
+    branches:
+      - main
+    paths:
+      - 'metrics/**'
+      - '.github/workflows/metrics-dashboard.yml'
+
+# Sets permissions of the GITHUB_TOKEN
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  collect-metrics:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests jinja2
+
+      - name: Create data directories
+        run: |
+          mkdir -p data/raw
+          mkdir -p data/aggregated
+          mkdir -p site
+
+      - name: Collect repository metrics
+        env:
+          GITHUB_TOKEN: ${{ secrets.ORG_READ_TOKEN }}
+          GITHUB_ORG: ${{ inputs.organization || vars.GH_ORG_NAME || github.repository_owner }}
+        run: |
+          echo "Collecting metrics for organization: $GITHUB_ORG"
+          python metrics/collect.py
+
+      - name: Aggregate metrics
+        run: python metrics/aggregate.py
+
+      - name: Render dashboard
+        env:
+          GITHUB_ORG: ${{ inputs.organization || vars.GH_ORG_NAME || github.repository_owner }}
+        run: python metrics/render_dashboard.py
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+      - name: Upload data artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrics-data
+          path: data/
+          retention-days: 30
+
+  deploy:
+    needs: collect-metrics
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
