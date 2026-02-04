@@ -80,7 +80,7 @@ jobs:
       - name: Aggregate metrics
         run: |
           python metrics/aggregate.py
-          if [ ! -f data/aggregated/org-metrics.json ]; then
+          if [ ! -f data/aggregated/dashboard.json ]; then
             echo "ERROR: Aggregation failed!"
             exit 1
           fi
