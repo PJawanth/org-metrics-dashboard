@@ -3,585 +3,596 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ org_name }} - Metrics Dashboard</title>
+    <title>{{ org_name }} - Engineering Metrics Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/[email protected]/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/[email protected]/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/[email protected]/dist/chart.umd.min.js"></script>
     <style>
-        :root {
-            --bg-primary: #0d1117;
-            --bg-secondary: #161b22;
-            --bg-tertiary: #21262d;
-            --text-primary: #c9d1d9;
-            --text-secondary: #8b949e;
-            --border-color: #30363d;
-            --accent-color: #58a6ff;
-            --success-color: #3fb950;
-            --warning-color: #d29922;
-            --danger-color: #f85149;
-        }
+        :root { --bg: #0f1419; --bg2: #1a1f2e; --bg3: #252d3d; --border: #2d3748; --text: #e2e8f0; --muted: #718096; --blue: #4299e1; --green: #48bb78; --yellow: #ecc94b; --red: #fc8181; --purple: #9f7aea; --cyan: #4fd1c5; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; }
         
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-        }
+        .header { background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 100%); border-bottom: 1px solid var(--border); padding: 1.5rem 2rem; }
+        .header h1 { font-size: 1.75rem; margin: 0 0 0.25rem 0; }
+        .header .sub { color: var(--muted); font-size: 0.875rem; }
+        .badge-green { background: rgba(72,187,120,0.2); color: var(--green); padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; }
         
-        .navbar {
-            background-color: var(--bg-secondary) !important;
-            border-bottom: 1px solid var(--border-color);
-        }
+        .container { max-width: 1800px; margin: 0 auto; padding: 1.5rem; }
         
-        .card {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-        }
+        /* Navigation Tabs */
+        .nav-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .nav-tab { background: var(--bg2); border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.5rem 1rem; color: var(--muted); cursor: pointer; font-size: 0.875rem; transition: all 0.2s; }
+        .nav-tab:hover, .nav-tab.active { background: var(--blue); color: white; border-color: var(--blue); }
         
-        .card-header {
-            background-color: var(--bg-tertiary);
-            border-bottom: 1px solid var(--border-color);
-            font-weight: 600;
-        }
+        /* Cards */
+        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 1rem; }
+        .card-title { font-size: 0.875rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .card-title i { color: var(--blue); }
         
-        .stat-card {
-            text-align: center;
-            padding: 1.5rem;
-        }
+        /* KPI Grid */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .kpi { background: var(--bg2); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.25rem; text-align: center; transition: all 0.2s; }
+        .kpi:hover { border-color: var(--blue); transform: translateY(-2px); }
+        .kpi-icon { width: 40px; height: 40px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-size: 1.25rem; }
+        .kpi-icon.blue { background: rgba(66,153,225,0.15); color: var(--blue); }
+        .kpi-icon.green { background: rgba(72,187,120,0.15); color: var(--green); }
+        .kpi-icon.yellow { background: rgba(236,201,75,0.15); color: var(--yellow); }
+        .kpi-icon.red { background: rgba(252,129,129,0.15); color: var(--red); }
+        .kpi-icon.purple { background: rgba(159,122,234,0.15); color: var(--purple); }
+        .kpi-icon.cyan { background: rgba(79,209,197,0.15); color: var(--cyan); }
+        .kpi-value { font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 0.25rem; }
+        .kpi-label { font-size: 0.75rem; color: var(--muted); }
         
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--accent-color);
-        }
+        /* DORA Cards */
+        .dora-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        @media (max-width: 1200px) { .dora-grid { grid-template-columns: repeat(2, 1fr); } }
+        .dora-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.5rem; text-align: center; position: relative; overflow: hidden; }
+        .dora-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+        .dora-card.elite::before { background: var(--green); }
+        .dora-card.high::before { background: var(--blue); }
+        .dora-card.medium::before { background: var(--yellow); }
+        .dora-card.low::before { background: var(--red); }
+        .dora-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.75rem; }
+        .dora-badge.elite { background: rgba(72,187,120,0.2); color: var(--green); }
+        .dora-badge.high { background: rgba(66,153,225,0.2); color: var(--blue); }
+        .dora-badge.medium { background: rgba(236,201,75,0.2); color: var(--yellow); }
+        .dora-badge.low { background: rgba(252,129,129,0.2); color: var(--red); }
+        .dora-value { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .dora-unit { font-size: 0.875rem; color: var(--muted); margin-bottom: 0.5rem; }
+        .dora-label { font-size: 0.75rem; color: var(--muted); }
         
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+        /* Charts */
+        .charts-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        @media (max-width: 1200px) { .charts-row { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .charts-row { grid-template-columns: 1fr; } }
+        .chart-box { height: 250px; position: relative; }
         
-        .table {
-            color: var(--text-primary);
-        }
+        /* Tables */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+        th { background: var(--bg3); padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: var(--muted); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:hover { background: var(--bg3); }
         
-        .table th {
-            border-color: var(--border-color);
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
+        .repo-link { color: var(--blue); text-decoration: none; font-weight: 500; }
+        .repo-link:hover { text-decoration: underline; }
         
-        .table td {
-            border-color: var(--border-color);
-        }
+        .tag { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.6875rem; font-weight: 600; }
+        .tag.elite, .tag.low-risk { background: rgba(72,187,120,0.15); color: var(--green); }
+        .tag.high { background: rgba(66,153,225,0.15); color: var(--blue); }
+        .tag.medium, .tag.med-risk { background: rgba(236,201,75,0.15); color: var(--yellow); }
+        .tag.low, .tag.high-risk, .tag.critical { background: rgba(252,129,129,0.15); color: var(--red); }
+        .tag.active { background: rgba(72,187,120,0.15); color: var(--green); }
+        .tag.stale { background: rgba(236,201,75,0.15); color: var(--yellow); }
+        .tag.inactive { background: rgba(252,129,129,0.15); color: var(--red); }
+        .tag.pass { background: rgba(72,187,120,0.15); color: var(--green); }
+        .tag.fail { background: rgba(252,129,129,0.15); color: var(--red); }
         
-        .lang-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.5rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
-            background-color: var(--bg-tertiary);
-        }
+        .lang-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
         
-        .lang-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-        }
+        .progress-bar { background: var(--bg); border-radius: 4px; height: 8px; overflow: hidden; width: 60px; display: inline-block; vertical-align: middle; }
+        .progress-fill { height: 100%; border-radius: 4px; }
+        .progress-fill.green { background: var(--green); }
+        .progress-fill.blue { background: var(--blue); }
+        .progress-fill.yellow { background: var(--yellow); }
+        .progress-fill.red { background: var(--red); }
         
-        .topic-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            margin: 0.125rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
-            background-color: rgba(88, 166, 255, 0.15);
-            color: var(--accent-color);
-            border: 1px solid rgba(88, 166, 255, 0.3);
-        }
+        .score { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; font-size: 0.75rem; font-weight: 700; }
+        .score.high { background: rgba(72,187,120,0.2); color: var(--green); }
+        .score.medium { background: rgba(236,201,75,0.2); color: var(--yellow); }
+        .score.low { background: rgba(252,129,129,0.2); color: var(--red); }
         
-        .progress {
-            background-color: var(--bg-tertiary);
-            height: 8px;
-            border-radius: 4px;
-        }
+        .check { color: var(--green); }
+        .cross { color: var(--red); }
         
-        .repo-link {
-            color: var(--accent-color);
-            text-decoration: none;
-        }
+        /* Sections */
+        .section { display: none; }
+        .section.active { display: block; }
         
-        .repo-link:hover {
-            text-decoration: underline;
-        }
+        .section-title { font-size: 1.125rem; font-weight: 600; margin: 1.5rem 0 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .section-title i { color: var(--blue); }
         
-        .contributor-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-        }
+        /* Governance */
+        .gov-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        @media (max-width: 992px) { .gov-grid { grid-template-columns: repeat(2, 1fr); } }
         
-        .activity-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 0.5rem;
-        }
+        /* Contributors */
+        .contrib-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg3); border-radius: 0.5rem; margin-bottom: 0.5rem; }
+        .contrib-avatar { width: 36px; height: 36px; border-radius: 50%; }
+        .contrib-name { font-weight: 600; font-size: 0.875rem; }
+        .contrib-stats { font-size: 0.75rem; color: var(--muted); }
+        .contrib-commits { font-weight: 700; color: var(--blue); }
         
-        .activity-high { background-color: var(--success-color); }
-        .activity-medium { background-color: var(--warning-color); }
-        .activity-low { background-color: var(--danger-color); }
+        /* Search */
+        .search-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.5rem 1rem; color: var(--text); font-size: 0.875rem; width: 200px; }
+        .search-box:focus { outline: none; border-color: var(--blue); }
+        .search-box::placeholder { color: var(--muted); }
         
-        .chart-container {
-            position: relative;
-            height: 300px;
-        }
+        .footer { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.8125rem; border-top: 1px solid var(--border); margin-top: 2rem; }
         
-        footer {
-            border-top: 1px solid var(--border-color);
-            padding: 2rem 0;
-            margin-top: 3rem;
-            color: var(--text-secondary);
-        }
-        
-        .text-muted {
-            color: var(--text-secondary) !important;
-        }
-        
-        .btn-outline-secondary {
-            color: var(--text-secondary);
-            border-color: var(--border-color);
-        }
-        
-        .btn-outline-secondary:hover {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-            border-color: var(--border-color);
-        }
-        
-        .archived-badge {
-            font-size: 0.7rem;
-            padding: 0.15rem 0.4rem;
-            background-color: var(--warning-color);
-            color: #000;
-            border-radius: 0.25rem;
-        }
+        /* Two column */
+        .two-col { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
+        @media (max-width: 992px) { .two-col { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="bi bi-github me-2"></i>
-                {{ org_name }} Metrics Dashboard
-            </a>
-            <span class="text-muted">
-                <i class="bi bi-clock me-1"></i>
-                Updated: {{ generated_at | format_date }}
-            </span>
+    <header class="header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1><i class="bi bi-bar-chart-fill me-2"></i>{{ org_name }} Engineering Dashboard</h1>
+                <div class="sub">DORA · DevOps · DevSecOps · Governance Analytics | Updated: {{ generated_at }}</div>
+            </div>
+            <span class="badge-green"><i class="bi bi-check-circle me-1"></i>{{ repos | length }} Repos Tracked</span>
         </div>
-    </nav>
+    </header>
 
-    <div class="container py-4">
-        <!-- Summary Stats -->
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-md-3">
-                <div class="card stat-card">
-                    <div class="stat-value">{{ summary.total_repos }}</div>
-                    <div class="stat-label">Repositories</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card stat-card">
-                    <div class="stat-value">{{ summary.total_stars | format_number }}</div>
-                    <div class="stat-label">Total Stars</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card stat-card">
-                    <div class="stat-value">{{ summary.total_forks | format_number }}</div>
-                    <div class="stat-label">Total Forks</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card stat-card">
-                    <div class="stat-value">{{ summary.unique_contributors }}</div>
-                    <div class="stat-label">Contributors</div>
-                </div>
-            </div>
+    <div class="container">
+        <!-- Navigation -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="showSection('overview')"><i class="bi bi-speedometer2 me-1"></i>Overview</div>
+            <div class="nav-tab" onclick="showSection('devops')"><i class="bi bi-git me-1"></i>DevOps (DORA + Flow)</div>
+            <div class="nav-tab" onclick="showSection('devsecops')"><i class="bi bi-shield-check me-1"></i>DevSecOps</div>
+            <div class="nav-tab" onclick="showSection('governance')"><i class="bi bi-clipboard-check me-1"></i>Governance & Audit</div>
+            <div class="nav-tab" onclick="showSection('repos')"><i class="bi bi-folder me-1"></i>Repository Details</div>
         </div>
 
-        <!-- Activity Overview -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="card stat-card">
-                    <div class="stat-value text-success">{{ summary.total_commits_30d | format_number }}</div>
-                    <div class="stat-label">Commits (30 days)</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card stat-card">
-                    <div class="stat-value text-warning">{{ summary.total_open_issues }}</div>
-                    <div class="stat-label">Open Issues</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card stat-card">
-                    <div class="stat-value text-info">{{ summary.total_open_prs }}</div>
-                    <div class="stat-label">Open PRs</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4">
-            <!-- Language Distribution -->
-            <div class="col-md-6">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <i class="bi bi-code-slash me-2"></i>
-                        Language Distribution
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="languageChart"></canvas>
-                        </div>
-                    </div>
-                </div>
+        <!-- OVERVIEW SECTION -->
+        <div id="overview" class="section active">
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <div class="kpi"><div class="kpi-icon blue"><i class="bi bi-folder"></i></div><div class="kpi-value">{{ repos | length }}</div><div class="kpi-label">Repositories</div></div>
+                <div class="kpi"><div class="kpi-icon green"><i class="bi bi-git"></i></div><div class="kpi-value">{{ flow.total_throughput }}</div><div class="kpi-label">PRs Merged (30d)</div></div>
+                <div class="kpi"><div class="kpi-icon purple"><i class="bi bi-arrow-repeat"></i></div><div class="kpi-value">{{ ci.total_runs }}</div><div class="kpi-label">CI Runs (30d)</div></div>
+                <div class="kpi"><div class="kpi-icon cyan"><i class="bi bi-check-circle"></i></div><div class="kpi-value">{{ ci.success_rate }}%</div><div class="kpi-label">CI Success Rate</div></div>
+                <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-exclamation-triangle"></i></div><div class="kpi-value">{{ security.total_vulns }}</div><div class="kpi-label">Open Vulnerabilities</div></div>
+                <div class="kpi"><div class="kpi-icon red"><i class="bi bi-shield-exclamation"></i></div><div class="kpi-value">{{ security.critical_vulns }}</div><div class="kpi-label">Critical Vulns</div></div>
             </div>
 
-            <!-- Activity Breakdown -->
-            <div class="col-md-6">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <i class="bi bi-activity me-2"></i>
-                        Repository Activity (30 days)
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span><span class="activity-indicator activity-high"></span>Very Active (&gt;10 commits)</span>
-                                <strong>{{ activity.very_active_repos }}</strong>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar bg-success" style="width: {{ (activity.very_active_repos / summary.active_repos * 100) if summary.active_repos else 0 }}%"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span><span class="activity-indicator activity-medium"></span>Active (1-10 commits)</span>
-                                <strong>{{ activity.active_repos }}</strong>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar bg-warning" style="width: {{ (activity.active_repos / summary.active_repos * 100) if summary.active_repos else 0 }}%"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span><span class="activity-indicator activity-low"></span>Inactive (0 commits)</span>
-                                <strong>{{ activity.inactive_repos }}</strong>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar bg-danger" style="width: {{ (activity.inactive_repos / summary.active_repos * 100) if summary.active_repos else 0 }}%"></div>
-                            </div>
-                        </div>
-                        
-                        <hr class="my-4" style="border-color: var(--border-color);">
-                        
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="fs-4 fw-bold text-success">{{ activity.issue_velocity.closed_30d }}</div>
-                                <small class="text-muted">Issues Closed (30d)</small>
-                            </div>
-                            <div class="col-6">
-                                <div class="fs-4 fw-bold text-info">{{ activity.pr_velocity.merged_30d }}</div>
-                                <small class="text-muted">PRs Merged (30d)</small>
-                            </div>
-                        </div>
-                    </div>
+            <!-- DORA Metrics -->
+            <h3 class="section-title"><i class="bi bi-speedometer2"></i> DORA Performance - Overall: <span class="tag {{ dora.overall | lower }}">{{ dora.overall }}</span></h3>
+            <div class="dora-grid">
+                <div class="dora-card {{ dora.deployment_frequency.category | lower }}">
+                    <span class="dora-badge {{ dora.deployment_frequency.category | lower }}">{{ dora.deployment_frequency.category }}</span>
+                    <div class="dora-value">{{ dora.deployment_frequency.value }}</div>
+                    <div class="dora-unit">{{ dora.deployment_frequency.unit }}</div>
+                    <div class="dora-label">Deployment Frequency</div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Top Repositories -->
-        <div class="row g-4 mt-2">
-            <div class="col-md-6">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <i class="bi bi-star me-2"></i>
-                        Most Starred Repositories
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Repository</th>
-                                    <th class="text-end">Stars</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for repo in top_repos.by_stars[:10] %}
-                                <tr>
-                                    <td>
-                                        <a href="{{ repo.url }}" class="repo-link" target="_blank">{{ repo.name }}</a>
-                                        {% if repo.language %}
-                                        <span class="lang-badge ms-2">
-                                            <span class="lang-dot" style="background-color: {{ repo.language | lang_color }}"></span>
-                                            {{ repo.language }}
-                                        </span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-end">
-                                        <i class="bi bi-star-fill text-warning me-1"></i>
-                                        {{ repo.value | format_number }}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="dora-card {{ dora.lead_time.category | lower }}">
+                    <span class="dora-badge {{ dora.lead_time.category | lower }}">{{ dora.lead_time.category }}</span>
+                    <div class="dora-value">{{ dora.lead_time.value }}h</div>
+                    <div class="dora-unit">{{ dora.lead_time.unit }}</div>
+                    <div class="dora-label">Lead Time for Changes</div>
+                </div>
+                <div class="dora-card {{ dora.mttr.category | lower }}">
+                    <span class="dora-badge {{ dora.mttr.category | lower }}">{{ dora.mttr.category }}</span>
+                    <div class="dora-value">{{ dora.mttr.value }}h</div>
+                    <div class="dora-unit">{{ dora.mttr.unit }}</div>
+                    <div class="dora-label">Mean Time to Recovery</div>
+                </div>
+                <div class="dora-card {{ dora.cfr.category | lower }}">
+                    <span class="dora-badge {{ dora.cfr.category | lower }}">{{ dora.cfr.category }}</span>
+                    <div class="dora-value">{{ dora.cfr.value }}%</div>
+                    <div class="dora-unit">{{ dora.cfr.unit }}</div>
+                    <div class="dora-label">Change Failure Rate</div>
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <i class="bi bi-graph-up me-2"></i>
-                        Most Active Repositories (30 days)
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Repository</th>
-                                    <th class="text-end">Commits</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for repo in top_repos.by_commits_30d[:10] %}
-                                <tr>
-                                    <td>
-                                        <a href="{{ repo.url }}" class="repo-link" target="_blank">{{ repo.name }}</a>
-                                        {% if repo.language %}
-                                        <span class="lang-badge ms-2">
-                                            <span class="lang-dot" style="background-color: {{ repo.language | lang_color }}"></span>
-                                            {{ repo.language }}
-                                        </span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-end">
-                                        <i class="bi bi-git text-success me-1"></i>
-                                        {{ repo.value }}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <!-- Charts Row -->
+            <div class="charts-row">
+                <div class="card"><div class="card-title"><i class="bi bi-bar-chart"></i> Repository Activity</div><div class="chart-box"><canvas id="activityChart"></canvas></div></div>
+                <div class="card"><div class="card-title"><i class="bi bi-pie-chart"></i> Technology Stack</div><div class="chart-box"><canvas id="langChart"></canvas></div></div>
+                <div class="card"><div class="card-title"><i class="bi bi-shield"></i> Security Overview</div><div class="chart-box"><canvas id="secChart"></canvas></div></div>
             </div>
-        </div>
 
-        <!-- Top Contributors -->
-        <div class="row g-4 mt-2">
-            <div class="col-12">
+            <!-- Quick Stats -->
+            <div class="two-col">
                 <div class="card">
-                    <div class="card-header">
-                        <i class="bi bi-people me-2"></i>
-                        Top Contributors
+                    <div class="card-title"><i class="bi bi-exclamation-octagon"></i> Risk Summary</div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center;">
+                        <div><div style="font-size: 2rem; font-weight: 700; color: var(--red);">{{ governance.risk_critical }}</div><div class="kpi-label">Critical</div></div>
+                        <div><div style="font-size: 2rem; font-weight: 700; color: var(--yellow);">{{ governance.risk_high }}</div><div class="kpi-label">High</div></div>
+                        <div><div style="font-size: 2rem; font-weight: 700; color: var(--blue);">{{ governance.risk_medium }}</div><div class="kpi-label">Medium</div></div>
+                        <div><div style="font-size: 2rem; font-weight: 700; color: var(--green);">{{ governance.risk_low }}</div><div class="kpi-label">Low</div></div>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            {% for contributor in contributors.top_contributors[:12] %}
-                            <div class="col-md-4 col-lg-3 mb-3">
-                                <div class="d-flex align-items-center p-2" style="background-color: var(--bg-tertiary); border-radius: 6px;">
-                                    <img src="https://github.com/{{ contributor.login }}.png?size=64" 
-                                         alt="{{ contributor.login }}" 
-                                         class="contributor-avatar">
-                                    <div>
-                                        <a href="{{ contributor.profile_url }}" class="repo-link" target="_blank">
-                                            {{ contributor.login }}
-                                        </a>
-                                        <div class="text-muted" style="font-size: 0.8rem;">
-                                            {{ contributor.total_contributions | format_number }} contributions
-                                            · {{ contributor.repo_count }} repos
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="bi bi-trophy"></i> Top Contributors</div>
+                    {% for c in contributors[:5] %}
+                    <div class="contrib-item">
+                        <img src="https://github.com/{{ c.login }}.png?size=72" class="contrib-avatar">
+                        <div style="flex:1"><div class="contrib-name">{{ c.login }}</div><div class="contrib-stats">{{ c.repo_count }} repos</div></div>
+                        <div class="contrib-commits">{{ c.commits }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- DEVOPS SECTION -->
+        <div id="devops" class="section">
+            <h3 class="section-title"><i class="bi bi-git"></i> DevOps Metrics (DORA + Flow) - Organization Wide</h3>
+            
+            <div class="kpi-grid">
+                <div class="kpi"><div class="kpi-icon blue"><i class="bi bi-rocket"></i></div><div class="kpi-value">{{ dora.deployment_frequency.value }}</div><div class="kpi-label">Deploys/Month</div></div>
+                <div class="kpi"><div class="kpi-icon green"><i class="bi bi-clock"></i></div><div class="kpi-value">{{ dora.lead_time.value }}h</div><div class="kpi-label">Lead Time</div></div>
+                <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-arrow-counterclockwise"></i></div><div class="kpi-value">{{ dora.mttr.value }}h</div><div class="kpi-label">MTTR</div></div>
+                <div class="kpi"><div class="kpi-icon red"><i class="bi bi-x-circle"></i></div><div class="kpi-value">{{ dora.cfr.value }}%</div><div class="kpi-label">CFR</div></div>
+                <div class="kpi"><div class="kpi-icon purple"><i class="bi bi-eye"></i></div><div class="kpi-value">{{ flow.review_time_avg }}h</div><div class="kpi-label">PR Review Time</div></div>
+                <div class="kpi"><div class="kpi-icon cyan"><i class="bi bi-stopwatch"></i></div><div class="kpi-value">{{ flow.cycle_time_avg }}h</div><div class="kpi-label">PR Cycle Time</div></div>
+                <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-stack"></i></div><div class="kpi-value">{{ flow.total_wip }}</div><div class="kpi-label">WIP (Open PRs)</div></div>
+                <div class="kpi"><div class="kpi-icon green"><i class="bi bi-check2-all"></i></div><div class="kpi-value">{{ flow.total_throughput }}</div><div class="kpi-label">Throughput (30d)</div></div>
+                <div class="kpi"><div class="kpi-icon green"><i class="bi bi-check-circle"></i></div><div class="kpi-value">{{ ci.success_rate }}%</div><div class="kpi-label">CI Success Rate</div></div>
+                <div class="kpi"><div class="kpi-icon red"><i class="bi bi-x-circle"></i></div><div class="kpi-value">{{ ci.failure_rate }}%</div><div class="kpi-label">CI Failure Rate</div></div>
+                <div class="kpi"><div class="kpi-icon blue"><i class="bi bi-hourglass-split"></i></div><div class="kpi-value">{{ ci.avg_duration }}m</div><div class="kpi-label">Pipeline Duration</div></div>
+                <div class="kpi"><div class="kpi-icon purple"><i class="bi bi-gear"></i></div><div class="kpi-value">{{ ci.adoption }}%</div><div class="kpi-label">CI/CD Adoption</div></div>
+            </div>
+
+            <h3 class="section-title"><i class="bi bi-table"></i> DevOps Metrics Per Repository</h3>
+            <div class="card">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Repository</th>
+                                <th>Deploy Freq</th>
+                                <th>Releases/Mo</th>
+                                <th>Lead Time</th>
+                                <th>MTTR</th>
+                                <th>CFR</th>
+                                <th>Review Time</th>
+                                <th>Cycle Time</th>
+                                <th>WIP</th>
+                                <th>Throughput</th>
+                                <th>CI Success</th>
+                                <th>CI Failure</th>
+                                <th>Pipeline</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in repos %}
+                            <tr>
+                                <td><a href="{{ r.url }}" class="repo-link" target="_blank">{{ r.name }}</a></td>
+                                <td><span class="tag {{ r.deploy_freq | lower }}">{{ r.deploy_freq }}</span></td>
+                                <td>{{ r.releases_month }}</td>
+                                <td>{{ r.lead_time_hours }}h</td>
+                                <td>{{ r.mttr_hours }}h</td>
+                                <td>{{ r.cfr }}%</td>
+                                <td>{{ r.review_time }}h</td>
+                                <td>{{ r.cycle_time }}h</td>
+                                <td>{{ r.wip }}</td>
+                                <td>{{ r.throughput }}</td>
+                                <td><span style="color: var(--green)">{{ r.ci_success }}%</span></td>
+                                <td><span style="color: var(--red)">{{ r.ci_failure }}%</span></td>
+                                <td>{{ r.pipeline_mins }}m</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEVSECOPS SECTION -->
+        <div id="devsecops" class="section">
+            <h3 class="section-title"><i class="bi bi-shield-check"></i> DevSecOps Metrics - Organization Wide</h3>
+            
+            <div class="kpi-grid">
+                <div class="kpi"><div class="kpi-icon red"><i class="bi bi-exclamation-octagon"></i></div><div class="kpi-value">{{ security.critical_vulns }}</div><div class="kpi-label">Critical Vulns</div></div>
+                <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-exclamation-triangle"></i></div><div class="kpi-value">{{ security.high_vulns }}</div><div class="kpi-label">High Vulns</div></div>
+                <div class="kpi"><div class="kpi-icon blue"><i class="bi bi-info-circle"></i></div><div class="kpi-value">{{ security.medium_vulns + security.low_vulns }}</div><div class="kpi-label">Medium/Low Vulns</div></div>
+                <div class="kpi"><div class="kpi-icon {% if security.vuln_trend == 'improving' %}green{% elif security.vuln_trend == 'stable' %}blue{% else %}red{% endif %}"><i class="bi bi-graph-{{ 'down' if security.vuln_trend == 'improving' else 'up' }}"></i></div><div class="kpi-value" style="font-size: 1.25rem; text-transform: capitalize;">{{ security.vuln_trend }}</div><div class="kpi-label">Vuln Trend</div></div>
+                <div class="kpi"><div class="kpi-icon purple"><i class="bi bi-clock-history"></i></div><div class="kpi-value">{{ security.security_mttr }}h</div><div class="kpi-label">Security MTTR</div></div>
+                <div class="kpi"><div class="kpi-icon green"><i class="bi bi-patch-check"></i></div><div class="kpi-value">{{ security.sla_compliance }}%</div><div class="kpi-label">SLA Compliance</div></div>
+                <div class="kpi"><div class="kpi-icon red"><i class="bi bi-key"></i></div><div class="kpi-value">{{ security.secrets_exposed }}</div><div class="kpi-label">Secrets Exposed</div></div>
+                <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-box"></i></div><div class="kpi-value">{{ security.dependency_risk }}</div><div class="kpi-label">Dependency Alerts</div></div>
+                <div class="kpi"><div class="kpi-icon green"><i class="bi bi-door-open"></i></div><div class="kpi-value">{{ security.gate_pass_rate }}%</div><div class="kpi-label">Gate Pass Rate</div></div>
+                <div class="kpi"><div class="kpi-icon blue"><i class="bi bi-code-slash"></i></div><div class="kpi-value">{{ security.code_issues }}</div><div class="kpi-label">Code Issues</div></div>
+            </div>
+
+            <div class="charts-row">
+                <div class="card">
+                    <div class="card-title"><i class="bi bi-shield"></i> Security Adoption Rates</div>
+                    <div style="padding: 1rem 0;">
+                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Branch Protection</span><strong>{{ security.branch_protection }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill green" style="width: {{ security.branch_protection }}%"></div></div></div>
+                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Dependabot</span><strong>{{ security.dependabot_adoption }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill blue" style="width: {{ security.dependabot_adoption }}%"></div></div></div>
+                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Secret Scanning</span><strong>{{ security.secret_scanning }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill purple" style="width: {{ security.secret_scanning }}%"></div></div></div>
+                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Code Scanning</span><strong>{{ security.code_scanning }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill cyan" style="width: {{ security.code_scanning }}%"></div></div></div>
+                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Security Policy</span><strong>{{ security.security_policy }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill yellow" style="width: {{ security.security_policy }}%"></div></div></div>
+                        <div><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>License Compliance</span><strong>{{ security.license_compliance }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill green" style="width: {{ security.license_compliance }}%"></div></div></div>
+                    </div>
+                </div>
+                <div class="card"><div class="card-title"><i class="bi bi-pie-chart"></i> Vulnerability Breakdown</div><div class="chart-box"><canvas id="vulnChart"></canvas></div></div>
+                <div class="card"><div class="card-title"><i class="bi bi-hexagon"></i> Security Radar</div><div class="chart-box"><canvas id="radarChart"></canvas></div></div>
+            </div>
+
+            <h3 class="section-title"><i class="bi bi-table"></i> DevSecOps Metrics Per Repository</h3>
+            <div class="card">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Repository</th>
+                                <th>Security Score</th>
+                                <th>Critical</th>
+                                <th>High</th>
+                                <th>Total Vulns</th>
+                                <th>Secrets</th>
+                                <th>Dep Alerts</th>
+                                <th>Gate</th>
+                                <th>Branch Prot</th>
+                                <th>Dependabot</th>
+                                <th>Risk</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in repos %}
+                            <tr>
+                                <td><a href="{{ r.url }}" class="repo-link" target="_blank">{{ r.name }}</a></td>
+                                <td><span class="score {% if r.security_score >= 70 %}high{% elif r.security_score >= 40 %}medium{% else %}low{% endif %}">{{ r.security_score }}</span></td>
+                                <td>{% if r.critical_vulns > 0 %}<span style="color: var(--red); font-weight: 700;">{{ r.critical_vulns }}</span>{% else %}0{% endif %}</td>
+                                <td>{% if r.high_vulns > 0 %}<span style="color: var(--yellow); font-weight: 700;">{{ r.high_vulns }}</span>{% else %}0{% endif %}</td>
+                                <td>{{ r.total_vulns }}</td>
+                                <td>{% if r.secrets > 0 %}<span style="color: var(--red); font-weight: 700;">{{ r.secrets }}</span>{% else %}0{% endif %}</td>
+                                <td>{{ r.total_vulns }}</td>
+                                <td><span class="tag {% if r.gate_pass %}pass{% else %}fail{% endif %}">{% if r.gate_pass %}PASS{% else %}FAIL{% endif %}</span></td>
+                                <td>{% if r.branch_prot %}<i class="bi bi-check-circle-fill check"></i>{% else %}<i class="bi bi-x-circle-fill cross"></i>{% endif %}</td>
+                                <td>{% if r.dependabot %}<i class="bi bi-check-circle-fill check"></i>{% else %}<i class="bi bi-x-circle-fill cross"></i>{% endif %}</td>
+                                <td><span class="tag {% if r.risk_level == 'Critical' %}critical{% elif r.risk_level == 'High' %}high-risk{% elif r.risk_level == 'Medium' %}med-risk{% else %}low-risk{% endif %}">{{ r.risk_level }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- GOVERNANCE SECTION -->
+        <div id="governance" class="section">
+            <h3 class="section-title"><i class="bi bi-clipboard-check"></i> Governance & Audit</h3>
+            
+            <div class="gov-grid">
+                <div class="kpi"><div class="kpi-icon blue"><i class="bi bi-folder"></i></div><div class="kpi-value">{{ governance.total_repos }}</div><div class="kpi-label">Total Repositories</div></div>
+                <div class="kpi"><div class="kpi-icon green"><i class="bi bi-check-all"></i></div><div class="kpi-value">{{ governance.scanned_repos }}</div><div class="kpi-label">Scanned Repos</div></div>
+                <div class="kpi"><div class="kpi-icon cyan"><i class="bi bi-percent"></i></div><div class="kpi-value">{{ governance.scan_coverage }}%</div><div class="kpi-label">Scan Coverage</div></div>
+                <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-archive"></i></div><div class="kpi-value">{{ governance.archived_repos }}</div><div class="kpi-label">Archived (Excluded)</div></div>
+            </div>
+
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-title"><i class="bi bi-info-circle"></i> Audit Information</div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+                    <div>
+                        <div style="color: var(--muted); font-size: 0.75rem; margin-bottom: 0.25rem;">Scan Date</div>
+                        <div style="font-weight: 600;">{{ generated_at }}</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--muted); font-size: 0.75rem; margin-bottom: 0.25rem;">Forked Repos (Included)</div>
+                        <div style="font-weight: 600;">{{ governance.forked_repos }}</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--muted); font-size: 0.75rem; margin-bottom: 0.25rem;">Data Source</div>
+                        <div style="font-weight: 600;">GitHub API v3</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title"><i class="bi bi-exclamation-triangle"></i> Risk Ranking</h3>
+            <div class="charts-row">
+                <div class="card"><div class="card-title">Risk Distribution</div><div class="chart-box"><canvas id="riskChart"></canvas></div></div>
+                <div class="card"><div class="card-title">Health Distribution</div><div class="chart-box"><canvas id="healthChart"></canvas></div></div>
+                <div class="card"><div class="card-title">Security Score Distribution</div><div class="chart-box"><canvas id="secScoreChart"></canvas></div></div>
+            </div>
+
+            <h3 class="section-title"><i class="bi bi-table"></i> Complete Repository Inventory</h3>
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span>Showing {{ repos | length }} repositories</span>
+                    <input type="text" class="search-box" id="govSearch" placeholder="Filter repos...">
+                </div>
+                <div class="table-container">
+                    <table id="govTable">
+                        <thead>
+                            <tr>
+                                <th>Repository</th>
+                                <th>Language</th>
+                                <th>Status</th>
+                                <th>Risk</th>
+                                <th>Health</th>
+                                <th>Security</th>
+                                <th>CI/CD</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in repos %}
+                            <tr class="gov-row">
+                                <td>
+                                    <a href="{{ r.url }}" class="repo-link" target="_blank">{{ r.name }}</a>
+                                    <div style="font-size: 0.75rem; color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ r.description }}</div>
+                                </td>
+                                <td>{% if r.language %}<span class="lang-dot" style="background: {{ r.language | lang_color }}"></span> {{ r.language }}{% else %}-{% endif %}</td>
+                                <td><span class="tag {{ r.status_color }}">{{ r.status }}</span></td>
+                                <td><span class="tag {% if r.risk_level == 'Critical' %}critical{% elif r.risk_level == 'High' %}high-risk{% elif r.risk_level == 'Medium' %}med-risk{% else %}low-risk{% endif %}">{{ r.risk_level }}</span></td>
+                                <td><span class="score {% if r.health_score >= 70 %}high{% elif r.health_score >= 40 %}medium{% else %}low{% endif %}">{{ r.health_score }}</span></td>
+                                <td><span class="score {% if r.security_score >= 70 %}high{% elif r.security_score >= 40 %}medium{% else %}low{% endif %}">{{ r.security_score }}</span></td>
+                                <td>{% if r.has_ci %}<i class="bi bi-check-circle-fill check"></i>{% else %}<i class="bi bi-x-circle-fill cross"></i>{% endif %}</td>
+                                <td style="font-size: 0.75rem; color: var(--muted);">{{ r.updated_at[:10] if r.updated_at else '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- REPOS SECTION -->
+        <div id="repos" class="section">
+            <h3 class="section-title"><i class="bi bi-folder"></i> All Repository Metrics</h3>
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span>Complete metrics for all {{ repos | length }} repositories</span>
+                    <input type="text" class="search-box" id="repoSearch" placeholder="Filter repos...">
+                </div>
+                <div class="table-container">
+                    <table id="repoTable">
+                        <thead>
+                            <tr>
+                                <th>Repository</th>
+                                <th>Health</th>
+                                <th>Security</th>
+                                <th>Risk</th>
+                                <th>Deploy</th>
+                                <th>Lead Time</th>
+                                <th>MTTR</th>
+                                <th>CFR</th>
+                                <th>WIP</th>
+                                <th>CI %</th>
+                                <th>Vulns</th>
+                                <th>Gate</th>
+                                <th>Commits</th>
+                                <th>PRs</th>
+                                <th>Issues</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in repos %}
+                            <tr class="repo-row">
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <i class="bi bi-{% if r.has_ci %}check-circle-fill check{% else %}circle cross{% endif %}"></i>
+                                        <div>
+                                            <a href="{{ r.url }}" class="repo-link" target="_blank">{{ r.name }}</a>
+                                            {% if r.language %}<div style="font-size: 0.7rem; color: var(--muted);"><span class="lang-dot" style="background: {{ r.language | lang_color }}"></span> {{ r.language }}</div>{% endif %}
                                         </div>
                                     </div>
-                                </div>
-                            </div>
+                                </td>
+                                <td><span class="score {% if r.health_score >= 70 %}high{% elif r.health_score >= 40 %}medium{% else %}low{% endif %}">{{ r.health_score }}</span></td>
+                                <td><span class="score {% if r.security_score >= 70 %}high{% elif r.security_score >= 40 %}medium{% else %}low{% endif %}">{{ r.security_score }}</span></td>
+                                <td><span class="tag {% if r.risk_level == 'Critical' %}critical{% elif r.risk_level == 'High' %}high-risk{% elif r.risk_level == 'Medium' %}med-risk{% else %}low-risk{% endif %}">{{ r.risk_level }}</span></td>
+                                <td><span class="tag {{ r.deploy_freq | lower }}">{{ r.deploy_freq }}</span></td>
+                                <td>{{ r.lead_time_hours }}h</td>
+                                <td>{{ r.mttr_hours }}h</td>
+                                <td>{{ r.cfr }}%</td>
+                                <td>{{ r.wip }}</td>
+                                <td>{{ r.ci_success }}%</td>
+                                <td>{% if r.total_vulns > 0 %}<span style="color: var(--red);">{{ r.total_vulns }}</span>{% else %}0{% endif %}</td>
+                                <td><span class="tag {% if r.gate_pass %}pass{% else %}fail{% endif %}">{% if r.gate_pass %}✓{% else %}✗{% endif %}</span></td>
+                                <td>{{ r.commits_30d }}</td>
+                                <td>{{ r.open_prs }}</td>
+                                <td>{{ r.open_issues }}</td>
+                            </tr>
                             {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Topics -->
-        {% if topics %}
-        <div class="row g-4 mt-2">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="bi bi-tags me-2"></i>
-                        Popular Topics
-                    </div>
-                    <div class="card-body">
-                        {% for topic, count in topics.items() %}
-                        <span class="topic-badge">{{ topic }} ({{ count }})</span>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- All Repositories -->
-        <div class="row g-4 mt-2">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span>
-                            <i class="bi bi-folder me-2"></i>
-                            All Repositories ({{ repos | length }})
-                        </span>
-                        <div>
-                            <input type="text" id="repoSearch" class="form-control form-control-sm" 
-                                   placeholder="Filter repositories..." 
-                                   style="background-color: var(--bg-tertiary); border-color: var(--border-color); color: var(--text-primary);">
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0" id="repoTable">
-                                <thead>
-                                    <tr>
-                                        <th>Repository</th>
-                                        <th>Language</th>
-                                        <th class="text-end">Stars</th>
-                                        <th class="text-end">Forks</th>
-                                        <th class="text-end">Issues</th>
-                                        <th class="text-end">PRs</th>
-                                        <th class="text-end">Commits (30d)</th>
-                                        <th>Updated</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for repo in repos %}
-                                    <tr class="repo-row">
-                                        <td>
-                                            <a href="{{ repo.url }}" class="repo-link" target="_blank">{{ repo.name }}</a>
-                                            {% if repo.is_archived %}
-                                            <span class="archived-badge ms-1">archived</span>
-                                            {% endif %}
-                                            {% if repo.description %}
-                                            <div class="text-muted" style="font-size: 0.8rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                                {{ repo.description }}
-                                            </div>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if repo.language %}
-                                            <span class="lang-badge">
-                                                <span class="lang-dot" style="background-color: {{ repo.language | lang_color }}"></span>
-                                                {{ repo.language }}
-                                            </span>
-                                            {% else %}
-                                            <span class="text-muted">-</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-end">{{ repo.stars | format_number }}</td>
-                                        <td class="text-end">{{ repo.forks | format_number }}</td>
-                                        <td class="text-end">{{ repo.open_issues }}</td>
-                                        <td class="text-end">{{ repo.open_prs }}</td>
-                                        <td class="text-end">
-                                            {% if repo.commits_30d > 10 %}
-                                            <span class="text-success">{{ repo.commits_30d }}</span>
-                                            {% elif repo.commits_30d > 0 %}
-                                            <span class="text-warning">{{ repo.commits_30d }}</span>
-                                            {% else %}
-                                            <span class="text-muted">0</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-muted">{{ repo.updated_at | time_ago }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer>
-        <div class="container text-center">
-            <p class="mb-1">
-                <i class="bi bi-github me-1"></i>
-                {{ org_name }} Metrics Dashboard
-            </p>
-            <p class="mb-0">
-                <small>Last updated: {{ generated_at | format_date }} · Powered by GitHub API</small>
-            </p>
-        </div>
+    <footer class="footer">
+        <p><i class="bi bi-github me-1"></i> {{ org_name }} Engineering Metrics Dashboard</p>
+        <small>Generated: {{ generated_at }} | Data source: GitHub API</small>
     </footer>
 
     <script>
-        // Language Chart
-        const langData = {{ languages.by_bytes | tojson | safe }};
-        const langLabels = Object.keys(langData).slice(0, 10);
-        const langValues = langLabels.map(l => langData[l].percentage);
-        const langColors = [
-            '#3572A5', '#f1e05a', '#2b7489', '#b07219', '#178600',
-            '#f34b7d', '#00ADD8', '#dea584', '#701516', '#4F5D95'
-        ];
+        // Tab Navigation
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
 
-        new Chart(document.getElementById('languageChart'), {
-            type: 'doughnut',
-            data: {
-                labels: langLabels,
-                datasets: [{
-                    data: langValues,
-                    backgroundColor: langColors,
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            color: '#c9d1d9',
-                            padding: 15,
-                            usePointStyle: true
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.label + ': ' + context.raw.toFixed(1) + '%';
-                            }
-                        }
-                    }
-                }
+        // Search filters
+        ['repoSearch', 'govSearch'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', e => {
+                    const term = e.target.value.toLowerCase();
+                    const table = id === 'repoSearch' ? 'repoTable' : 'govTable';
+                    document.querySelectorAll(`#${table} tbody tr`).forEach(row => {
+                        row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+                    });
+                });
             }
         });
 
-        // Repository search/filter
-        document.getElementById('repoSearch').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('.repo-row');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
-            });
+        // Charts
+        Chart.defaults.color = '#718096';
+        Chart.defaults.borderColor = '#2d3748';
+
+        const repoNames = {{ repos | map(attribute='name') | list | tojson | safe }};
+        const commits = {{ repos | map(attribute='commits_30d') | list | tojson | safe }};
+
+        new Chart(document.getElementById('activityChart'), {
+            type: 'bar',
+            data: { labels: repoNames.slice(0,8), datasets: [{ label: 'Commits', data: commits.slice(0,8), backgroundColor: '#4299e1', borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
+        });
+
+        const langs = {{ languages | tojson | safe }};
+        const langColors = { Python: '#3572A5', JavaScript: '#f1e05a', TypeScript: '#2b7489', Java: '#b07219', 'C#': '#178600', Go: '#00ADD8', HTML: '#e34c26', Shell: '#89e051' };
+        new Chart(document.getElementById('langChart'), {
+            type: 'doughnut',
+            data: { labels: langs.map(l => l.name), datasets: [{ data: langs.map(l => l.count), backgroundColor: langs.map(l => langColors[l.name] || '#586069'), borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right' } } }
+        });
+
+        new Chart(document.getElementById('secChart'), {
+            type: 'doughnut',
+            data: { labels: ['Secure', 'Vulnerabilities'], datasets: [{ data: [{{ repos | length }} - {{ security.total_vulns }}, {{ security.total_vulns }}], backgroundColor: ['#48bb78', '#fc8181'], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right' } } }
+        });
+
+        new Chart(document.getElementById('vulnChart'), {
+            type: 'doughnut',
+            data: { labels: ['Critical', 'High', 'Medium', 'Low'], datasets: [{ data: [{{ security.critical_vulns }}, {{ security.high_vulns }}, {{ security.medium_vulns }}, {{ security.low_vulns }}], backgroundColor: ['#fc8181', '#ecc94b', '#4299e1', '#a0aec0'], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '50%', plugins: { legend: { position: 'right' } } }
+        });
+
+        new Chart(document.getElementById('radarChart'), {
+            type: 'radar',
+            data: { labels: ['Branch Prot', 'Dependabot', 'Secret Scan', 'Code Scan', 'Security Policy', 'License'], datasets: [{ label: '%', data: [{{ security.branch_protection }}, {{ security.dependabot_adoption }}, {{ security.secret_scanning }}, {{ security.code_scanning }}, {{ security.security_policy }}, {{ security.license_compliance }}], backgroundColor: 'rgba(66,153,225,0.2)', borderColor: '#4299e1', pointBackgroundColor: '#4299e1' }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById('riskChart'), {
+            type: 'bar',
+            data: { labels: ['Critical', 'High', 'Medium', 'Low'], datasets: [{ data: [{{ governance.risk_critical }}, {{ governance.risk_high }}, {{ governance.risk_medium }}, {{ governance.risk_low }}], backgroundColor: ['#fc8181', '#ecc94b', '#4299e1', '#48bb78'], borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+        });
+
+        const healthScores = {{ repos | map(attribute='health_score') | list | tojson | safe }};
+        new Chart(document.getElementById('healthChart'), {
+            type: 'bar',
+            data: { labels: repoNames.slice(0,8), datasets: [{ label: 'Health', data: healthScores.slice(0,8), backgroundColor: '#48bb78', borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { max: 100 } } }
+        });
+
+        const secScores = {{ repos | map(attribute='security_score') | list | tojson | safe }};
+        new Chart(document.getElementById('secScoreChart'), {
+            type: 'bar',
+            data: { labels: repoNames.slice(0,8), datasets: [{ label: 'Security', data: secScores.slice(0,8), backgroundColor: '#4299e1', borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { max: 100 } } }
         });
     </script>
 </body>
