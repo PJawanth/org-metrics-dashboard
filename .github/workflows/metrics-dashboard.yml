@@ -59,27 +59,42 @@ jobs:
 
       - name: Collect repository metrics
         env:
-          GITHUB_TOKEN: ${{ secrets.ORG_READ_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ORG_READ_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_ORG: ${{ inputs.organization || vars.GH_ORG_NAME || github.repository_owner }}
         run: |
-          echo "Collecting metrics for organization: $GITHUB_ORG"
-          echo "Token configured: ${{ secrets.ORG_READ_TOKEN != '' }}"
+          echo "Collecting metrics for: $GITHUB_ORG"
+          if [ -z "$GITHUB_TOKEN" ]; then
+            echo "ERROR: No GitHub token available!"
+            exit 1
+          fi
           python metrics/collect.py
-          echo "=== Files collected ==="
-          ls -la data/raw/ || echo "No raw data files found"
+          
+          # Verify data was collected
+          FILE_COUNT=$(ls -1 data/raw/*.json 2>/dev/null | wc -l)
+          echo "Collected data for $FILE_COUNT repositories"
+          if [ "$FILE_COUNT" -eq 0 ]; then
+            echo "ERROR: No repository data collected!"
+            exit 1
+          fi
 
       - name: Aggregate metrics
         run: |
           python metrics/aggregate.py
-          echo "=== Aggregated data ==="
-          ls -la data/aggregated/ || echo "No aggregated data"
+          if [ ! -f data/aggregated/org-metrics.json ]; then
+            echo "ERROR: Aggregation failed!"
+            exit 1
+          fi
 
       - name: Render dashboard
         env:
           GITHUB_ORG: ${{ inputs.organization || vars.GH_ORG_NAME || github.repository_owner }}
         run: |
           python metrics/render_dashboard.py
-          echo "=== Site files ==="
+          if [ ! -f site/index.html ]; then
+            echo "ERROR: Dashboard not generated!"
+            exit 1
+          fi
+          echo "=== Site contents ==="
           ls -la site/
 
       - name: Upload site artifact
