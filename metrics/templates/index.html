@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ org_name }} - Engineering Metrics Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/[email protected]/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/[email protected]/font/bootstrap-icons.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/[email protected]/dist/chart.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
         :root { --bg: #0f1419; --bg2: #1a1f2e; --bg3: #252d3d; --border: #2d3748; --text: #e2e8f0; --muted: #718096; --blue: #4299e1; --green: #48bb78; --yellow: #ecc94b; --red: #fc8181; --purple: #9f7aea; --cyan: #4fd1c5; }
         * { box-sizing: border-box; }
@@ -71,7 +71,7 @@
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
         th { background: var(--bg3); padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: var(--muted); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); white-space: nowrap; }
-        td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
         tr:hover { background: var(--bg3); }
         
         .repo-link { color: var(--blue); text-decoration: none; font-weight: 500; }
@@ -96,6 +96,8 @@
         .progress-fill.blue { background: var(--blue); }
         .progress-fill.yellow { background: var(--yellow); }
         .progress-fill.red { background: var(--red); }
+        .progress-fill.purple { background: var(--purple); }
+        .progress-fill.cyan { background: var(--cyan); }
         
         .score { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; font-size: 0.75rem; font-weight: 700; }
         .score.high { background: rgba(72,187,120,0.2); color: var(--green); }
@@ -313,12 +315,12 @@
                 <div class="card">
                     <div class="card-title"><i class="bi bi-shield"></i> Security Adoption Rates</div>
                     <div style="padding: 1rem 0;">
-                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Branch Protection</span><strong>{{ security.branch_protection }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill green" style="width: {{ security.branch_protection }}%"></div></div></div>
-                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Dependabot</span><strong>{{ security.dependabot_adoption }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill blue" style="width: {{ security.dependabot_adoption }}%"></div></div></div>
-                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Secret Scanning</span><strong>{{ security.secret_scanning }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill purple" style="width: {{ security.secret_scanning }}%"></div></div></div>
-                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Code Scanning</span><strong>{{ security.code_scanning }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill cyan" style="width: {{ security.code_scanning }}%"></div></div></div>
-                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Security Policy</span><strong>{{ security.security_policy }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill yellow" style="width: {{ security.security_policy }}%"></div></div></div>
-                        <div><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>License Compliance</span><strong>{{ security.license_compliance }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill green" style="width: {{ security.license_compliance }}%"></div></div></div>
+                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span style="color: var(--text);">Branch Protection</span><strong style="color: var(--green);">{{ security.branch_protection }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill green" style="width: {{ security.branch_protection }}%"></div></div></div>
+                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span style="color: var(--text);">Dependabot</span><strong style="color: var(--blue);">{{ security.dependabot_adoption }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill blue" style="width: {{ security.dependabot_adoption }}%"></div></div></div>
+                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span style="color: var(--text);">Secret Scanning</span><strong style="color: var(--purple);">{{ security.secret_scanning }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill purple" style="width: {{ security.secret_scanning }}%"></div></div></div>
+                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span style="color: var(--text);">Code Scanning</span><strong style="color: var(--cyan);">{{ security.code_scanning }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill cyan" style="width: {{ security.code_scanning }}%"></div></div></div>
+                        <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span style="color: var(--text);">Security Policy</span><strong style="color: var(--yellow);">{{ security.security_policy }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill yellow" style="width: {{ security.security_policy }}%"></div></div></div>
+                        <div><div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span style="color: var(--text);">License Compliance</span><strong style="color: var(--green);">{{ security.license_compliance }}%</strong></div><div class="progress-bar" style="width: 100%;"><div class="progress-fill green" style="width: {{ security.license_compliance }}%"></div></div></div>
                     </div>
                 </div>
                 <div class="card"><div class="card-title"><i class="bi bi-pie-chart"></i> Vulnerability Breakdown</div><div class="chart-box"><canvas id="vulnChart"></canvas></div></div>
@@ -349,11 +351,11 @@
                             <tr>
                                 <td><a href="{{ r.url }}" class="repo-link" target="_blank">{{ r.name }}</a></td>
                                 <td><span class="score {% if r.security_score >= 70 %}high{% elif r.security_score >= 40 %}medium{% else %}low{% endif %}">{{ r.security_score }}</span></td>
-                                <td>{% if r.critical_vulns > 0 %}<span style="color: var(--red); font-weight: 700;">{{ r.critical_vulns }}</span>{% else %}0{% endif %}</td>
-                                <td>{% if r.high_vulns > 0 %}<span style="color: var(--yellow); font-weight: 700;">{{ r.high_vulns }}</span>{% else %}0{% endif %}</td>
-                                <td>{{ r.total_vulns }}</td>
-                                <td>{% if r.secrets > 0 %}<span style="color: var(--red); font-weight: 700;">{{ r.secrets }}</span>{% else %}0{% endif %}</td>
-                                <td>{{ r.total_vulns }}</td>
+                                <td>{% if r.critical_vulns > 0 %}<span style="color: var(--red); font-weight: 700;">{{ r.critical_vulns }}</span>{% else %}<span style="color: var(--muted);">0</span>{% endif %}</td>
+                                <td>{% if r.high_vulns > 0 %}<span style="color: var(--yellow); font-weight: 700;">{{ r.high_vulns }}</span>{% else %}<span style="color: var(--muted);">0</span>{% endif %}</td>
+                                <td>{% if r.total_vulns > 0 %}<span style="color: var(--red);">{{ r.total_vulns }}</span>{% else %}<span style="color: var(--muted);">0</span>{% endif %}</td>
+                                <td>{% if r.secrets > 0 %}<span style="color: var(--red); font-weight: 700;">{{ r.secrets }}</span>{% else %}<span style="color: var(--muted);">0</span>{% endif %}</td>
+                                <td>{% if r.total_vulns > 0 %}<span style="color: var(--yellow);">{{ r.total_vulns }}</span>{% else %}<span style="color: var(--muted);">0</span>{% endif %}</td>
                                 <td><span class="tag {% if r.gate_pass %}pass{% else %}fail{% endif %}">{% if r.gate_pass %}PASS{% else %}FAIL{% endif %}</span></td>
                                 <td>{% if r.branch_prot %}<i class="bi bi-check-circle-fill check"></i>{% else %}<i class="bi bi-x-circle-fill cross"></i>{% endif %}</td>
                                 <td>{% if r.dependabot %}<i class="bi bi-check-circle-fill check"></i>{% else %}<i class="bi bi-x-circle-fill cross"></i>{% endif %}</td>
@@ -536,9 +538,20 @@
             }
         });
 
-        // Charts
-        Chart.defaults.color = '#718096';
-        Chart.defaults.borderColor = '#2d3748';
+        // Initialize charts after DOM is ready
+        function initCharts() {
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js not loaded');
+                return;
+            }
+            
+            // Global chart defaults for dark theme
+            Chart.defaults.color = '#e2e8f0';
+            Chart.defaults.borderColor = '#2d3748';
+            Chart.defaults.plugins.legend.labels.color = '#e2e8f0';
+            
+            const textColor = '#e2e8f0';
+            const gridColor = '#2d3748';
 
         const repoNames = {{ repos | map(attribute='name') | list | tojson | safe }};
         const commits = {{ repos | map(attribute='commits_30d') | list | tojson | safe }};
@@ -546,54 +559,65 @@
         new Chart(document.getElementById('activityChart'), {
             type: 'bar',
             data: { labels: repoNames.slice(0,8), datasets: [{ label: 'Commits', data: commits.slice(0,8), backgroundColor: '#4299e1', borderRadius: 4 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: textColor } }, y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: gridColor } } } }
         });
 
         const langs = {{ languages | tojson | safe }};
-        const langColors = { Python: '#3572A5', JavaScript: '#f1e05a', TypeScript: '#2b7489', Java: '#b07219', 'C#': '#178600', Go: '#00ADD8', HTML: '#e34c26', Shell: '#89e051' };
+        const langColors = { Python: '#3572A5', JavaScript: '#f1e05a', TypeScript: '#2b7489', Java: '#b07219', 'C#': '#178600', Go: '#00ADD8', HTML: '#e34c26', Shell: '#89e051', HCL: '#5c4ee5', PHP: '#4F5D95', Swift: '#F05138', Ruby: '#CC342D', Markdown: '#083fa1' };
         new Chart(document.getElementById('langChart'), {
             type: 'doughnut',
             data: { labels: langs.map(l => l.name), datasets: [{ data: langs.map(l => l.count), backgroundColor: langs.map(l => langColors[l.name] || '#586069'), borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right' } } }
+            options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { color: textColor, padding: 10 } } } }
         });
 
+        // Security overview: repos with no vulns vs repos with vulns
+        const reposWithVulns = {{ repos | selectattr('total_vulns', 'gt', 0) | list | length }};
+        const reposSecure = {{ repos | length }} - reposWithVulns;
         new Chart(document.getElementById('secChart'), {
             type: 'doughnut',
-            data: { labels: ['Secure', 'Vulnerabilities'], datasets: [{ data: [{{ repos | length }} - {{ security.total_vulns }}, {{ security.total_vulns }}], backgroundColor: ['#48bb78', '#fc8181'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right' } } }
+            data: { labels: ['Secure Repos', 'Repos with Vulns'], datasets: [{ data: [Math.max(0, reposSecure), reposWithVulns], backgroundColor: ['#48bb78', '#fc8181'], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { color: textColor, padding: 10 } } } }
         });
 
         new Chart(document.getElementById('vulnChart'), {
             type: 'doughnut',
             data: { labels: ['Critical', 'High', 'Medium', 'Low'], datasets: [{ data: [{{ security.critical_vulns }}, {{ security.high_vulns }}, {{ security.medium_vulns }}, {{ security.low_vulns }}], backgroundColor: ['#fc8181', '#ecc94b', '#4299e1', '#a0aec0'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '50%', plugins: { legend: { position: 'right' } } }
+            options: { responsive: true, maintainAspectRatio: false, cutout: '50%', plugins: { legend: { position: 'right', labels: { color: textColor, padding: 10 } } } }
         });
 
         new Chart(document.getElementById('radarChart'), {
             type: 'radar',
             data: { labels: ['Branch Prot', 'Dependabot', 'Secret Scan', 'Code Scan', 'Security Policy', 'License'], datasets: [{ label: '%', data: [{{ security.branch_protection }}, {{ security.dependabot_adoption }}, {{ security.secret_scanning }}, {{ security.code_scanning }}, {{ security.security_policy }}, {{ security.license_compliance }}], backgroundColor: 'rgba(66,153,225,0.2)', borderColor: '#4299e1', pointBackgroundColor: '#4299e1' }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
+            options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100, ticks: { color: textColor, backdropColor: 'transparent' }, pointLabels: { color: textColor, font: { size: 11 } }, grid: { color: gridColor } } }, plugins: { legend: { display: false } } }
         });
 
         new Chart(document.getElementById('riskChart'), {
             type: 'bar',
             data: { labels: ['Critical', 'High', 'Medium', 'Low'], datasets: [{ data: [{{ governance.risk_critical }}, {{ governance.risk_high }}, {{ governance.risk_medium }}, {{ governance.risk_low }}], backgroundColor: ['#fc8181', '#ecc94b', '#4299e1', '#48bb78'], borderRadius: 4 }] },
-            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor }, grid: { display: false } } } }
         });
 
         const healthScores = {{ repos | map(attribute='health_score') | list | tojson | safe }};
         new Chart(document.getElementById('healthChart'), {
             type: 'bar',
             data: { labels: repoNames.slice(0,8), datasets: [{ label: 'Health', data: healthScores.slice(0,8), backgroundColor: '#48bb78', borderRadius: 4 }] },
-            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { max: 100 } } }
+            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { max: 100, ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor }, grid: { display: false } } } }
         });
 
         const secScores = {{ repos | map(attribute='security_score') | list | tojson | safe }};
         new Chart(document.getElementById('secScoreChart'), {
             type: 'bar',
             data: { labels: repoNames.slice(0,8), datasets: [{ label: 'Security', data: secScores.slice(0,8), backgroundColor: '#4299e1', borderRadius: 4 }] },
-            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { max: 100 } } }
+            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { max: 100, ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor }, grid: { display: false } } } }
         });
+        }
+        
+        // Wait for Chart.js to load then initialize
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCharts);
+        } else {
+            initCharts();
+        }
     </script>
 </body>
 </html>
