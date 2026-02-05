@@ -112,6 +112,209 @@ This dashboard provides **executive-level visibility** into your GitHub organiza
 
 ---
 
+## 🧮 Metrics Calculation Formulas
+
+### DORA Metrics
+
+#### Deployment Frequency
+```
+Deployment Frequency = Total Releases (90 days) / 3
+
+Categories:
+  Elite  : ≥ 8 releases/month (multiple per week)
+  High   : ≥ 4 releases/month (weekly)
+  Medium : ≥ 1 release/month
+  Low    : < 1 release/month
+```
+
+#### Lead Time for Changes
+```
+Lead Time = Average(PR Merge Time) for all merged PRs in 30 days
+
+Where: PR Merge Time = PR Merged At - PR Created At (in hours)
+
+Categories:
+  Elite  : < 24 hours (less than one day)
+  High   : < 168 hours (less than one week)
+  Medium : < 720 hours (less than one month)
+  Low    : ≥ 720 hours (one month or more)
+```
+
+#### Mean Time to Recovery (MTTR)
+```
+MTTR = Average(Issue Close Time) for issues labeled "bug" or "incident"
+
+Where: Issue Close Time = Issue Closed At - Issue Created At (in hours)
+
+Categories:
+  Elite  : < 1 hour
+  High   : < 24 hours (less than one day)
+  Medium : < 168 hours (less than one week)
+  Low    : ≥ 168 hours (one week or more)
+```
+
+#### Change Failure Rate (CFR)
+```
+CFR = (Failed Deployments / Total Deployments) × 100
+
+Estimation: (Bug Issues Created in 30 days / Total Releases) × 100
+
+Categories:
+  Elite  : < 5%
+  High   : < 15%
+  Medium : < 30%
+  Low    : ≥ 30%
+```
+
+#### Overall DORA Score
+```
+Score Mapping: Elite=4, High=3, Medium=2, Low=1
+
+Overall Score = (DF_score + LT_score + MTTR_score + CFR_score) / 4
+
+Final Category:
+  Elite  : Score ≥ 3.5
+  High   : Score ≥ 2.5
+  Medium : Score ≥ 1.5
+  Low    : Score < 1.5
+```
+
+### Flow Metrics
+
+#### PR Review Time
+```
+PR Review Time = Average Merge Time × 0.6
+
+(Estimates that review takes ~60% of the total merge time)
+```
+
+#### PR Cycle Time
+```
+PR Cycle Time = Average(Merged At - Created At) for all merged PRs
+```
+
+#### Work in Progress (WIP)
+```
+WIP = Count of Open Pull Requests
+```
+
+#### Throughput
+```
+Throughput = Count of PRs Merged in Last 30 Days
+```
+
+### CI/CD Metrics
+
+#### CI Adoption Rate
+```
+CI Adoption = (Repos with CI/CD Workflows / Total Active Repos) × 100
+```
+
+#### CI Success Rate
+```
+CI Success Rate = (Successful Workflow Runs / Total Workflow Runs) × 100
+```
+
+#### CI Failure Rate
+```
+CI Failure Rate = 100 - CI Success Rate
+```
+
+#### Pipeline Duration
+```
+Pipeline Duration = Workflow Count × 5 minutes (estimated)
+```
+
+### DevSecOps Metrics
+
+#### Vulnerability Distribution
+```
+Critical Vulns = Total Vulnerabilities × 0.10 (10%)
+High Vulns     = Total Vulnerabilities × 0.20 (20%)
+Medium Vulns   = Total Vulnerabilities × 0.40 (40%)
+Low Vulns      = Total Vulnerabilities × 0.30 (30%)
+```
+
+#### Vulnerability Trend
+```
+Trend Categories:
+  Improving : Total Vulns < 10
+  Stable    : Total Vulns < 20
+  Worsening : Total Vulns ≥ 20
+```
+
+#### SLA Compliance
+```
+SLA Compliance = (Repos with 0 Critical Vulns / Total Active Repos) × 100
+```
+
+#### Security Gate Pass Rate
+```
+Gate Pass Rate = (Repos with Security Score ≥ 50 / Total Active Repos) × 100
+```
+
+#### Security Adoption Rates
+```
+Branch Protection % = (Repos with Branch Protection / Total Repos) × 100
+Dependabot %        = (Repos with Dependabot Enabled / Total Repos) × 100
+Secret Scanning %   = (Repos with Secret Scanning / Total Repos) × 100
+Code Scanning %     = (Repos with Code Scanning / Total Repos) × 100
+Security Policy %   = (Repos with SECURITY.md / Total Repos) × 100
+License Compliance %= (Repos with License File / Total Repos) × 100
+```
+
+### Governance Metrics
+
+#### Risk Level Classification
+```
+Per Repository:
+  Critical : Vulnerabilities > 5 OR Security Score < 30
+  High     : Vulnerabilities > 2 OR Security Score < 50
+  Medium   : Vulnerabilities > 0 OR Security Score < 70
+  Low      : Vulnerabilities = 0 AND Security Score ≥ 70
+```
+
+#### Activity Status
+```
+Based on Last Updated Date:
+  Active   : Updated within 30 days
+  Stale    : Updated 30-180 days ago
+  Inactive : Not updated in 180+ days
+  Archived : Repository is archived
+```
+
+#### Health Score (0-100)
+```
+Factors considered:
+  + Has README
+  + Has License
+  + Has Description
+  + Has Topics/Tags
+  + Recent Activity (commits in 30 days)
+  + Has CI/CD
+  + Has Branch Protection
+  + Low Issue Count
+```
+
+#### Security Score (0-100)
+```
+Factors considered:
+  + Branch Protection Enabled (+20)
+  + Dependabot Enabled (+20)
+  + Secret Scanning Enabled (+15)
+  + Code Scanning Enabled (+15)
+  + Has Security Policy (+10)
+  + Has License (+10)
+  + No Vulnerabilities (+10)
+```
+
+#### Scan Coverage
+```
+Scan Coverage = (Non-Archived Repos / Total Repos) × 100
+```
+
+---
+
 ## 🎨 Dashboard Features
 
 The dashboard includes **5 interactive tabs**:
@@ -188,7 +391,7 @@ Go to **Settings → Secrets and variables → Actions**:
 
 | Name | Description | Example |
 |------|-------------|---------|
-| `GH_ORG_NAME` | Organization or username to scan | `PJawanth` |
+| `GH_ORG_NAME` | Organization or username to scan | `xxxxxxxx` |
 
 ### 3️⃣ Enable GitHub Pages
 
