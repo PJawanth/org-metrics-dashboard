@@ -236,11 +236,11 @@
             
             <div class="kpi-grid">
                 <div class="kpi"><div class="kpi-icon blue"><i class="bi bi-rocket"></i></div><div class="kpi-value">{{ dora.deployment_frequency.value }}</div><div class="kpi-label">Deploys/Month</div></div>
-                <div class="kpi"><div class="kpi-icon green"><i class="bi bi-clock"></i></div><div class="kpi-value">{{ dora.lead_time.value }}h</div><div class="kpi-label">Lead Time</div></div>
-                <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-arrow-counterclockwise"></i></div><div class="kpi-value">{{ dora.mttr.value }}h</div><div class="kpi-label">MTTR</div></div>
+                <div class="kpi"><div class="kpi-icon green"><i class="bi bi-clock"></i></div><div class="kpi-value">{% if dora.lead_time.value is none %}N/A{% else %}{{ dora.lead_time.value }}h{% endif %}</div><div class="kpi-label">Lead Time</div></div>
+                <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-arrow-counterclockwise"></i></div><div class="kpi-value">{% if dora.mttr.value is none %}N/A{% else %}{{ dora.mttr.value }}h{% endif %}</div><div class="kpi-label">MTTR</div></div>
                 <div class="kpi"><div class="kpi-icon red"><i class="bi bi-x-circle"></i></div><div class="kpi-value">{{ dora.ci_failure_rate.value }}%</div><div class="kpi-label">CI Failure Rate</div></div>
-                <div class="kpi"><div class="kpi-icon purple"><i class="bi bi-eye"></i></div><div class="kpi-value">{{ flow.review_time_avg }}h</div><div class="kpi-label">PR Review Time</div></div>
-                <div class="kpi"><div class="kpi-icon cyan"><i class="bi bi-stopwatch"></i></div><div class="kpi-value">{{ flow.cycle_time_avg }}h</div><div class="kpi-label">PR Cycle Time</div></div>
+                <div class="kpi"><div class="kpi-icon purple"><i class="bi bi-eye"></i></div><div class="kpi-value">{% if flow.review_time_avg is none %}N/A{% else %}{{ flow.review_time_avg }}h{% endif %}</div><div class="kpi-label">PR Review Time</div></div>
+                <div class="kpi"><div class="kpi-icon cyan"><i class="bi bi-stopwatch"></i></div><div class="kpi-value">{% if flow.cycle_time_avg is none %}N/A{% else %}{{ flow.cycle_time_avg }}h{% endif %}</div><div class="kpi-label">PR Cycle Time</div></div>
                 <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-stack"></i></div><div class="kpi-value">{{ flow.total_wip }}</div><div class="kpi-label">WIP (Open PRs)</div></div>
                 <div class="kpi"><div class="kpi-icon green"><i class="bi bi-check2-all"></i></div><div class="kpi-value">{{ flow.total_throughput }}</div><div class="kpi-label">Throughput (30d)</div></div>
                 <div class="kpi"><div class="kpi-icon green"><i class="bi bi-check-circle"></i></div><div class="kpi-value">{{ ci.success_rate }}%</div><div class="kpi-label">CI Success Rate</div></div>
@@ -303,7 +303,7 @@
                 <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-exclamation-triangle"></i></div><div class="kpi-value">{{ security.high_vulns }}</div><div class="kpi-label">High Vulns</div></div>
                 <div class="kpi"><div class="kpi-icon blue"><i class="bi bi-info-circle"></i></div><div class="kpi-value">{{ security.medium_vulns + security.low_vulns }}</div><div class="kpi-label">Medium/Low Vulns</div></div>
                 <div class="kpi"><div class="kpi-icon {% if security.vuln_trend == 'improving' %}green{% elif security.vuln_trend == 'stable' %}blue{% else %}red{% endif %}"><i class="bi bi-graph-{{ 'down' if security.vuln_trend == 'improving' else 'up' }}"></i></div><div class="kpi-value" style="font-size: 1.25rem; text-transform: capitalize;">{{ security.vuln_trend }}</div><div class="kpi-label">Vuln Trend</div></div>
-                <div class="kpi"><div class="kpi-icon purple"><i class="bi bi-clock-history"></i></div><div class="kpi-value">{{ security.security_mttr }}h</div><div class="kpi-label">Security MTTR</div></div>
+                <div class="kpi"><div class="kpi-icon purple"><i class="bi bi-clock-history"></i></div><div class="kpi-value">{% if security.security_mttr is none %}N/A{% else %}{{ security.security_mttr }}h{% endif %}</div><div class="kpi-label">Security MTTR</div></div>
                 <div class="kpi"><div class="kpi-icon green"><i class="bi bi-patch-check"></i></div><div class="kpi-value">{{ security.sla_compliance }}%</div><div class="kpi-label">SLA Compliance</div></div>
                 <div class="kpi"><div class="kpi-icon red"><i class="bi bi-key"></i></div><div class="kpi-value">{{ security.secrets_exposed }}</div><div class="kpi-label">Secrets Exposed</div></div>
                 <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-box"></i></div><div class="kpi-value">{{ security.dependency_risk }}</div><div class="kpi-label">Dependency Alerts</div></div>

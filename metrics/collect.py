@@ -272,6 +272,78 @@ def get_org_repos(org: str) -> Tuple[List[Dict], Optional[str]]:
     return data, err
 
 
+# ============================================================================
+# HELPER FUNCTIONS FOR REAL METRICS COMPUTATION
+# ============================================================================
+
+
+def pick_dependabot_resolved_at(alert: Dict[str, Any]) -> Optional[datetime]:
+    """
+    Extract real resolution timestamp from Dependabot alert.
+    Prefers fixed_at over dismissed_at.
+    Returns None if neither available.
+    """
+    if alert.get("fixed_at"):
+        try:
+            return parse_date(alert["fixed_at"])
+        except (ValueError, TypeError):
+            pass
+    
+    if alert.get("dismissed_at"):
+        try:
+            return parse_date(alert["dismissed_at"])
+        except (ValueError, TypeError):
+            pass
+    
+    return None
+
+
+def compute_dependabot_mttr_hours(owner: str, repo: str) -> Tuple[Optional[float], bool, Optional[str]]:
+    """
+    Compute real Security MTTR from Dependabot alert resolution times.
+    Returns (mttr_hours_avg, was_truncated, error_reason).
+    
+    - mttr_hours_avg: float if alerts resolved, None if none found or unavailable
+    - was_truncated: True if paginated and capped
+    - error_reason: None if success, string if permission/availability issue
+    """
+    alerts, truncated, err = get_paginated(
+        f"{API_BASE}/repos/{owner}/{repo}/dependabot/alerts",
+        {"state": "all"},  # Get all alerts (open + resolved)
+        max_pages=2,
+    )
+
+    if err:
+        # Permission or availability issue - return None, not 0
+        return None, truncated, err
+
+    mttr_hours_list = []
+    for alert in alerts:
+        try:
+            resolved_at = pick_dependabot_resolved_at(alert)
+            if resolved_at is None:
+                # Alert not resolved yet, skip
+                continue
+            
+            if resolved_at <= DAYS_30:
+                # Resolved before 30-day window, skip
+                continue
+            
+            created = parse_date(alert["created_at"])
+            mttr_hours = (resolved_at - created).total_seconds() / 3600
+            mttr_hours_list.append(mttr_hours)
+        except (KeyError, ValueError, TypeError):
+            # Skip alerts with bad data
+            pass
+
+    # Return None if no resolved alerts in window (not 0)
+    if not mttr_hours_list:
+        return None, truncated, err
+
+    avg_mttr = round(sum(mttr_hours_list) / len(mttr_hours_list), 1)
+    return avg_mttr, truncated, None
+
+
 def get_pr_metrics(owner: str, repo: str) -> Dict[str, Any]:
     """
     Collect PR metrics with data quality tracking.
@@ -338,18 +410,36 @@ def get_pr_metrics(owner: str, repo: str) -> Dict[str, Any]:
     prs_count = len([p for p in prs if isinstance(p, dict)])
     merged_count = len(merged)
     
+    # Compute lead_time: None if no merged PRs
+    lead_time_hours = round(sum(lead_times) / len(lead_times), 1) if lead_times else None
+    lead_time_days = round(lead_time_hours / 24, 2) if lead_time_hours is not None else None
+    
+    # Compute review_time: None if no reviews found
+    review_time_hours = round(sum(review_times) / len(review_times), 1) if review_times else None
+    
+    # Cycle time same as lead time (or None)
+    cycle_time_hours = lead_time_hours
+    
+    # Compute merge_rate: None if no PRs at all
+    merge_rate = round(merged_count / prs_count * 100, 1) if prs_count > 0 else None
+    
+    # Open/WIP/Stale: set to None if no open PRs to analyze
+    open_count = len(open_prs) if open_prs else None
+    wip = open_count
+    stale_count = len([a for a in pr_ages if a > 14]) if pr_ages else None
+    
     return {
         "total": prs_count,
-        "open": len(open_prs),
+        "open": open_count,
         "merged_30d": len(merged_30d),
         "throughput": len(merged_30d),
-        "wip": len(open_prs),
-        "stale": len([a for a in pr_ages if a > 14]),
-        "lead_time_hours": round(sum(lead_times) / len(lead_times), 1) if lead_times else 0,
-        "lead_time_days": round(sum(lead_times) / len(lead_times) / 24, 2) if lead_times else 0,
-        "review_time_hours": round(sum(review_times) / len(review_times), 1) if review_times else 0,
-        "cycle_time_hours": round(sum(lead_times) / len(lead_times), 1) if lead_times else 0,
-        "merge_rate": round(merged_count / prs_count * 100, 1) if prs_count > 0 else 0,
+        "wip": wip,
+        "stale": stale_count,
+        "lead_time_hours": lead_time_hours,
+        "lead_time_days": lead_time_days,
+        "review_time_hours": review_time_hours,
+        "cycle_time_hours": cycle_time_hours,
+        "merge_rate": merge_rate,
         "truncated": truncated,
     }
 
@@ -454,9 +544,9 @@ def get_ci_metrics(owner: str, repo: str) -> Dict[str, Any]:
             "workflows": 0,
             "runs_30d": 0,
             "success_rate": 0,
-            "failure_rate": 0,
-            "ci_failure_rate": 0,
-            "duration_mins": 0,
+            "failure_rate": None,
+            "ci_failure_rate": None,
+            "duration_mins": None,
             "truncated": False,
         }
 
@@ -496,14 +586,20 @@ def get_ci_metrics(owner: str, repo: str) -> Dict[str, Any]:
         except (ValueError, TypeError):
             pass
 
+    # Compute failure_rate: None if no runs to analyze
+    computed_failure_rate = round(failure_rate, 1) if total_runs > 0 else None
+    
+    # Compute duration: None if no duration data
+    computed_duration = round(sum(durations_mins) / len(durations_mins), 1) if durations_mins else None
+
     return {
         "has_ci": True,
         "workflows": len(workflows),
         "runs_30d": len(runs_30d),
         "success_rate": round(success_rate, 1),
-        "failure_rate": round(failure_rate, 1),
-        "ci_failure_rate": round(failure_rate, 1),  # Renamed from DORA CFR
-        "duration_mins": round(sum(durations_mins) / len(durations_mins), 1) if durations_mins else 0,
+        "failure_rate": computed_failure_rate,
+        "ci_failure_rate": computed_failure_rate,  # Renamed from DORA CFR
+        "duration_mins": computed_duration,
         "truncated": len(runs) >= 100,  # Simple heuristic: if we got 100 items, might be truncated
     }
 
@@ -606,30 +702,14 @@ def get_security_metrics(owner: str, repo: str) -> Dict[str, Any]:
         elif m["critical"] == 0:
             score += 10
 
-    # Compute Security MTTR from resolved alerts (closed state)
+    # Compute Security MTTR from resolved alerts using real timestamps
     if m["available_dependabot"]:
-        try:
-            resolved_alerts, _, _ = get_paginated(
-                f"{API_BASE}/repos/{owner}/{repo}/dependabot/alerts",
-                {"state": "dismissed"},  # Also try "fixed" if available
-                max_pages=2,
-            )
-
-            mttr_list = []
-            for alert in resolved_alerts:
-                try:
-                    created = parse_date(alert["created_at"])
-                    updated = parse_date(alert.get("updated_at", alert.get("created_at")))
-                    if updated > DAYS_30:
-                        mttr = (updated - created).total_seconds() / 3600
-                        mttr_list.append(mttr)
-                except (ValueError, TypeError, KeyError):
-                    pass
-
-            if mttr_list:
-                m["security_mttr_hours"] = round(sum(mttr_list) / len(mttr_list), 1)
-        except Exception:
-            pass
+        mttr_hours, mttr_truncated, mttr_err = compute_dependabot_mttr_hours(owner, repo)
+        if mttr_err:
+            m["security_mttr_hours"] = None
+            m["errors"].append({"field": "security_mttr_hours", "reason": mttr_err})
+        else:
+            m["security_mttr_hours"] = mttr_hours
 
     # 5. Code scanning alerts
     alerts, truncated, err = get_paginated(

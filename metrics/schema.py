@@ -47,16 +47,16 @@ RAW_REPO_NESTED_SCHEMAS = {
     },
     "pr": {
         "total": int,
-        "open": int,
+        "open": (int, type(None)),
         "merged_30d": int,
         "throughput": int,
-        "wip": int,
-        "stale": int,
-        "lead_time_hours": (int, float),
-        "lead_time_days": (int, float),
-        "review_time_hours": (int, float),
-        "cycle_time_hours": (int, float),
-        "merge_rate": (int, float),
+        "wip": (int, type(None)),
+        "stale": (int, type(None)),
+        "lead_time_hours": (int, float, type(None)),
+        "lead_time_days": (int, float, type(None)),
+        "review_time_hours": (int, float, type(None)),
+        "cycle_time_hours": (int, float, type(None)),
+        "merge_rate": (int, float, type(None)),
         "truncated": bool,  # true if results were paginated and capped
     },
     "issues": {
@@ -75,9 +75,9 @@ RAW_REPO_NESTED_SCHEMAS = {
         "workflows": int,
         "runs_30d": int,
         "success_rate": (int, float),
-        "failure_rate": (int, float),
-        "duration_mins": (int, float),
-        "ci_failure_rate": (int, float),  # Renamed from cfr for clarity
+        "failure_rate": (int, float, type(None)),
+        "duration_mins": (int, float, type(None)),
+        "ci_failure_rate": (int, float, type(None)),  # Renamed from cfr for clarity
         "truncated": bool,
     },
     "security": {
