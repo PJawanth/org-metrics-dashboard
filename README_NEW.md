@@ -10,6 +10,8 @@
 
 A **production-grade metrics dashboard** that automatically collects real data from GitHub APIs, aggregates organization-wide metrics, and visualizes engineering performance through interactive dashboards. Deployed via GitHub Pages with zero manual intervention.
 
+---
+
 ## 🎯 What This Does
 
 Track and visualize **DORA metrics**, **DevSecOps posture**, and **governance compliance** across your entire GitHub organization:
@@ -21,19 +23,6 @@ Track and visualize **DORA metrics**, **DevSecOps posture**, and **governance co
 | Mean Time to Recovery | Adoption Rates | Repo Inventory |
 | Change Failure Rate | SLA Compliance | Health Scores |
 | PR Cycle Time | Branch Protection | Activity Status |
-
-## 🎯 Purpose
-
-This dashboard provides **executive-level visibility** into your GitHub organization's:
-
-| Category | What You Get |
-|----------|--------------|
-| 🚀 **DevOps Performance** | DORA metrics (Deployment Frequency, Lead Time, MTTR, CFR) |
-| 🔒 **Security Posture** | Vulnerability tracking, security adoption rates |
-| 📋 **Governance & Compliance** | Risk ranking, repo inventory, audit information |
-| 📈 **Flow Metrics** | PR cycle time, review time, WIP, throughput |
-
----
 
 ---
 
@@ -148,7 +137,7 @@ Three-stage automated pipeline runs daily:
 
 ---
 
-### Calculation Formulas
+## 🧮 Calculation Formulas
 
 #### Deployment Frequency
 ```
@@ -213,26 +202,6 @@ Stale    : Updated 30-180 days ago
 Inactive : Not updated in 180+ days
 Archived : Repository archived
 ```
-
----
-
-## 🎨 Dashboard Features
-
-The dashboard includes **5 interactive tabs**:
-
-| Tab | Contents |
-|-----|----------|
-| **📊 Overview** | KPI cards, DORA performance cards, charts, risk summary, top contributors |
-| **🚀 DevOps** | All DORA + Flow metrics with per-repository breakdown table |
-| **🔒 DevSecOps** | Security KPIs, adoption progress bars, vulnerability charts, per-repo security table |
-| **📋 Governance** | Audit info, risk distribution charts, complete repo inventory |
-| **📁 Repository Details** | Comprehensive searchable table with all metrics per repository |
-
-### Visualizations Include:
-- 📊 Bar charts for repository activity
-- 🍩 Doughnut charts for language and security distribution
-- 📈 Radar charts for security adoption
-- 🎯 DORA performance cards with Elite/High/Medium/Low ratings
 
 ---
 
@@ -360,7 +329,7 @@ python -m pytest tests/ -v
 
 ---
 
-## � Understanding DORA Categories
+## 📊 Understanding DORA Categories
 
 The dashboard rates your organization across the **DORA Framework**:
 
@@ -436,4 +405,41 @@ git push origin feature/amazing-feature
 
 ---
 
-## 📊 DORA Performance Categories
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
+
+---
+
+## 🙏 Credits
+
+- [DORA Metrics](https://dora.dev/) - DevOps Research and Assessment
+- [Chart.js](https://www.chartjs.org/) - JavaScript charting library
+- [Bootstrap](https://getbootstrap.com/) - CSS framework
+- [Bootstrap Icons](https://icons.getbootstrap.com/) - Icon library
+- [Jinja2](https://jinja.palletsprojects.com/) - Python templating engine
+
+---
+
+## 🆘 Support & Issues
+
+**Encountering problems?**
+
+1. Check existing [Issues](https://github.com/PJawanth/org-metrics-dashboard/issues)
+2. Review GitHub Actions workflow logs
+3. Create a new issue with:
+   - Error message or screenshot
+   - Steps to reproduce
+   - Your setup (org size, repo count)
+
+---
+
+<div align="center">
+
+### 🌟 **Built with ❤️ for Engineering Leaders**
+
+**Automated DevOps, DevSecOps, and Governance Metrics**
+
+[View Live Dashboard](https://pjawanth.github.io/org-metrics-dashboard/) • [Report Issue](https://github.com/PJawanth/org-metrics-dashboard/issues) • [Star Repository](https://github.com/PJawanth/org-metrics-dashboard)
+
+</div>
