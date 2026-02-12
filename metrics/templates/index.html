@@ -191,11 +191,11 @@
                     <div class="dora-unit">{{ dora.mttr.unit }}</div>
                     <div class="dora-label">Mean Time to Recovery</div>
                 </div>
-                <div class="dora-card {{ dora.cfr.category | lower }}">
-                    <span class="dora-badge {{ dora.cfr.category | lower }}">{{ dora.cfr.category }}</span>
-                    <div class="dora-value">{{ dora.cfr.value }}%</div>
-                    <div class="dora-unit">{{ dora.cfr.unit }}</div>
-                    <div class="dora-label">Change Failure Rate</div>
+                <div class="dora-card {{ dora.ci_failure_rate.category | lower }}">
+                    <span class="dora-badge {{ dora.ci_failure_rate.category | lower }}">{{ dora.ci_failure_rate.category }}</span>
+                    <div class="dora-value">{{ dora.ci_failure_rate.value }}%</div>
+                    <div class="dora-unit">{{ dora.ci_failure_rate.unit }}</div>
+                    <div class="dora-label">CI Failure Rate</div>
                 </div>
             </div>
 
@@ -238,7 +238,7 @@
                 <div class="kpi"><div class="kpi-icon blue"><i class="bi bi-rocket"></i></div><div class="kpi-value">{{ dora.deployment_frequency.value }}</div><div class="kpi-label">Deploys/Month</div></div>
                 <div class="kpi"><div class="kpi-icon green"><i class="bi bi-clock"></i></div><div class="kpi-value">{{ dora.lead_time.value }}h</div><div class="kpi-label">Lead Time</div></div>
                 <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-arrow-counterclockwise"></i></div><div class="kpi-value">{{ dora.mttr.value }}h</div><div class="kpi-label">MTTR</div></div>
-                <div class="kpi"><div class="kpi-icon red"><i class="bi bi-x-circle"></i></div><div class="kpi-value">{{ dora.cfr.value }}%</div><div class="kpi-label">CFR</div></div>
+                <div class="kpi"><div class="kpi-icon red"><i class="bi bi-x-circle"></i></div><div class="kpi-value">{{ dora.ci_failure_rate.value }}%</div><div class="kpi-label">CI Failure Rate</div></div>
                 <div class="kpi"><div class="kpi-icon purple"><i class="bi bi-eye"></i></div><div class="kpi-value">{{ flow.review_time_avg }}h</div><div class="kpi-label">PR Review Time</div></div>
                 <div class="kpi"><div class="kpi-icon cyan"><i class="bi bi-stopwatch"></i></div><div class="kpi-value">{{ flow.cycle_time_avg }}h</div><div class="kpi-label">PR Cycle Time</div></div>
                 <div class="kpi"><div class="kpi-icon yellow"><i class="bi bi-stack"></i></div><div class="kpi-value">{{ flow.total_wip }}</div><div class="kpi-label">WIP (Open PRs)</div></div>

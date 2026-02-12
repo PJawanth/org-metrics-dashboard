@@ -30,14 +30,18 @@ def load_metrics() -> Dict[str, Any]:
 
 
 def format_number(value) -> str:
+    """Format number with M/K suffixes. Return 'N/A' for None values."""
     if value is None:
-        return "0"
-    value = float(value)
-    if value >= 1_000_000:
-        return f"{value / 1_000_000:.1f}M"
-    elif value >= 1_000:
-        return f"{value / 1_000:.1f}K"
-    return str(int(value))
+        return "N/A"
+    try:
+        value = float(value)
+        if value >= 1_000_000:
+            return f"{value / 1_000_000:.1f}M"
+        elif value >= 1_000:
+            return f"{value / 1_000:.1f}K"
+        return str(int(value))
+    except (ValueError, TypeError):
+        return "N/A"
 
 
 def format_date(date_str: str) -> str:
@@ -113,6 +117,13 @@ def render_dashboard() -> None:
     env.filters["time_ago"] = time_ago
     env.filters["dora_color"] = get_dora_color
     env.filters["lang_color"] = get_lang_color
+
+    # Add filter for None values in templates
+    def default_na(value):
+        """Display 'N/A' for None values."""
+        return "N/A" if value is None else value
+
+    env.filters["default_na"] = default_na
     
     org_name = os.environ.get("GITHUB_ORG", metrics.get("org_name", "Organization"))
     
