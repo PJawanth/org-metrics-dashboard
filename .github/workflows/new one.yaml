@@ -23,7 +23,6 @@ permissions:
   pull-requests: read
   issues: read
   security-events: read
-  metadata: read
 
 concurrency:
   group: "pages"
