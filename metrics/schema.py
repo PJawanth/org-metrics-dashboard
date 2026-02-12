@@ -33,16 +33,16 @@ RAW_REPO_NESTED_SCHEMAS = {
     "dora": {
         "deployment_freq": str,
         "releases_per_month": (int, float),
-        "lead_time_hours": (int, float),
-        "lead_time_days": (int, float),
+        "lead_time_hours": (int, float, type(None)),
+        "lead_time_days": (int, float, type(None)),
         "mttr_hours": (int, float),
-        "cfr": (int, float),  # CI failure rate, NOT DORA CFR
+        "cfr": (int, float, type(None)),  # CI failure rate, NOT DORA CFR, can be None
         "cfr_category": str,
     },
     "flow": {
-        "review_time": (int, float),
-        "cycle_time": (int, float),
-        "wip": int,
+        "review_time": (int, float, type(None)),
+        "cycle_time": (int, float, type(None)),
+        "wip": (int, type(None)),
         "throughput": int,
     },
     "pr": {

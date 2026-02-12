@@ -814,9 +814,11 @@ def calculate_risk(data: Dict[str, Any]) -> Dict[str, Any]:
         score += 15
         factors.append("No branch protection")
 
-    if ci.get("failure_rate", 0) > 30:
+    # Check CI failure rate (handle None)
+    failure_rate = ci.get("failure_rate")
+    if failure_rate is not None and failure_rate > 30:
         score += 10
-        factors.append(f"High CI failure ({ci['failure_rate']}%)")
+        factors.append(f"High CI failure ({failure_rate}%)")
 
     pushed_at = data.get("pushed_at")
     if pushed_at:
@@ -872,25 +874,31 @@ def collect_repo(owner: str, repo_name: str) -> Dict[str, Any]:
         health += 10
     if sec.get("branch_protection"):
         health += 15
-    if pr.get("lead_time_hours", 0) > 0 and pr.get("lead_time_hours") < 48:
+    # Check lead_time_hours (handle None)
+    lead_time = pr.get("lead_time_hours")
+    if lead_time is not None and lead_time > 0 and lead_time < 48:
         health += 15
     if issues.get("stale", 999) < 5:
         health += 10
     if commits.get("count_30d", 0) > 0:
         health += 10
 
-    # Build DORA metrics
+    # Build DORA metrics (handle None values)
     deploy_cat = deploy.get("category", "Low")
-    lead_hours = pr.get("lead_time_hours", 0)
+    lead_hours = pr.get("lead_time_hours")  # Can be None
     mttr_hours = issues.get("mttr_hours", 0)
-    cfr = ci.get("ci_failure_rate", 0)  # CI failure rate, not DORA CFR
+    cfr = ci.get("ci_failure_rate")  # Can be None, CI failure rate, not DORA CFR
 
-    cfr_cat = (
-        "Elite" if cfr < 5
-        else "High" if cfr < 15
-        else "Medium" if cfr < 30
-        else "Low"
-    )
+    # CFR category (handle None)
+    if cfr is None:
+        cfr_cat = "Low"  # Default to Low if unknown
+    else:
+        cfr_cat = (
+            "Elite" if cfr < 5
+            else "High" if cfr < 15
+            else "Medium" if cfr < 30
+            else "Low"
+        )
 
     # Assemble collected data
     data = {
@@ -914,15 +922,15 @@ def collect_repo(owner: str, repo_name: str) -> Dict[str, Any]:
             "deployment_freq": deploy_cat,
             "releases_per_month": deploy.get("per_month", 0),
             "lead_time_hours": lead_hours,
-            "lead_time_days": pr.get("lead_time_days", 0),
+            "lead_time_days": pr.get("lead_time_days"),  # Can be None
             "mttr_hours": mttr_hours,
             "cfr": cfr,
             "cfr_category": cfr_cat,
         },
         "flow": {
-            "review_time": pr.get("review_time_hours", 0),
-            "cycle_time": pr.get("cycle_time_hours", 0),
-            "wip": pr.get("wip", 0),
+            "review_time": pr.get("review_time_hours"),  # Can be None
+            "cycle_time": pr.get("cycle_time_hours"),  # Can be None
+            "wip": pr.get("wip"),  # Can be None
             "throughput": pr.get("throughput", 0),
         },
         "pr": pr,
