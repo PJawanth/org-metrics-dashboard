@@ -162,16 +162,21 @@ def calc_flow(repos: List[Dict]) -> Dict[str, Any]:
 
     for r in active:
         pr = r.get("pr", {})
-        review_time = pr.get("review_time_hours", 0)
-        cycle_time = pr.get("cycle_time_hours", 0)
+        review_time = pr.get("review_time_hours")
+        cycle_time = pr.get("cycle_time_hours")
 
-        if review_time and review_time > 0:
+        # Only add if not None and > 0
+        if review_time is not None and review_time > 0:
             review_times.append(review_time)
-        if cycle_time and cycle_time > 0:
+        if cycle_time is not None and cycle_time > 0:
             cycle_times.append(cycle_time)
 
-        total_wip += pr.get("wip", 0)
-        total_throughput += pr.get("throughput", 0)
+        # Handle None wip and throughput (treat as 0)
+        wip = pr.get("wip")
+        total_wip += wip if wip is not None else 0
+        
+        throughput = pr.get("throughput")
+        total_throughput += throughput if throughput is not None else 0
 
     return {
         "review_time_avg": safe_avg(review_times),
@@ -192,15 +197,15 @@ def calc_ci(repos: List[Dict]) -> Dict[str, Any]:
 
     for r in with_ci:
         ci = r.get("ci", {})
-        sr = ci.get("success_rate", 0)
-        if sr and sr > 0:
+        sr = ci.get("success_rate")
+        if sr is not None and sr > 0:
             success_rates.append(sr)
 
         runs = ci.get("runs_30d", 0)
-        total_runs += runs
+        total_runs += runs if runs is not None else 0
 
-        dur = ci.get("duration_mins", 0)
-        if dur and dur > 0:
+        dur = ci.get("duration_mins")
+        if dur is not None and dur > 0:
             durations.append(dur)
 
     avg_sr = safe_avg(success_rates)
@@ -503,22 +508,22 @@ def build_repo_table(repos: List[Dict]) -> List[Dict[str, Any]]:
             "health_score": r.get("health_score", 50),
             "security_score": sec.get("score", 50),
             "risk_level": risk,
-            # DORA
+            # DORA (handle None)
             "deploy_freq": dora.get("deployment_freq", "Low"),
-            "releases_month": dora.get("releases_per_month", 0),
-            "lead_time_hours": dora.get("lead_time_hours", 0),
-            "mttr_hours": dora.get("mttr_hours", 0),
-            "cfr": dora.get("cfr", 0),
-            # Flow
-            "review_time": pr.get("review_time_hours", 0),
-            "cycle_time": pr.get("cycle_time_hours", 0),
-            "wip": pr.get("wip", 0),
-            "throughput": pr.get("throughput", 0),
-            # CI
+            "releases_month": dora.get("releases_per_month") or 0,
+            "lead_time_hours": dora.get("lead_time_hours") or 0,
+            "mttr_hours": dora.get("mttr_hours") or 0,
+            "cfr": dora.get("cfr") or 0,
+            # Flow (handle None)
+            "review_time": pr.get("review_time_hours") or 0,
+            "cycle_time": pr.get("cycle_time_hours") or 0,
+            "wip": pr.get("wip") or 0,
+            "throughput": pr.get("throughput") or 0,
+            # CI (handle None)
             "has_ci": ci.get("has_ci", False),
-            "ci_success": ci.get("success_rate", 0),
-            "ci_failure": ci.get("failure_rate", 0),
-            "pipeline_mins": ci.get("duration_mins", 0),
+            "ci_success": ci.get("success_rate") or 0,
+            "ci_failure": ci.get("failure_rate") or 0,
+            "pipeline_mins": ci.get("duration_mins") or 0,
             # Security - real values
             "critical_vulns": sec.get("critical", 0),
             "high_vulns": sec.get("high", 0),
@@ -531,7 +536,7 @@ def build_repo_table(repos: List[Dict]) -> List[Dict[str, Any]]:
             "gate_pass": sec.get("gate_pass", False),
             # Activity
             "commits_30d": r.get("commits", {}).get("count_30d", 0),
-            "open_prs": pr.get("open", 0),
+            "open_prs": pr.get("open") or 0,
             "open_issues": issues.get("open", 0),
             "stars": r.get("stars", 0),
             "forks": r.get("forks", 0),
